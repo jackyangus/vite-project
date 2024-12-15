@@ -3,9 +3,9 @@ import { AudioQosData, VideoQosData, VideoStatisticOption, StatisticOption } fro
 import { fakeAudioQosData, fakeVideoQosData, fakeSharingQosData } from "./fakeQos"; // Import the fake data
 
 interface QoSDisplayProps {
-  audioQosData?: AudioQosData;
-  videoQosData?: VideoQosData;
-  sharingQosData?: VideoQosData; // Assuming it's similar to VideoQosData or AudioQosData, replace `any` with a specific type if needed
+  audioQosData?: { encode: AudioQosData; decode: AudioQosData };
+  videoQosData?: { encode: VideoQosData; decode: VideoQosData };
+  sharingQosData?: { encode: VideoQosData; decode: VideoQosData }; // Assuming it's similar to VideoQosData or AudioQosData, replace `any` with a specific type if needed
   subscribeToVideoStatistic?: (type?: VideoStatisticOption) => void;
   unsubscribeFromVideoStatistic?: (type?: VideoStatisticOption) => void;
   subscribeToAudioStatistic?: (type?: StatisticOption) => void;
@@ -61,104 +61,121 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
     subscribeToAudioStatistic,
     unsubscribeFromAudioStatistic,
   ]);
+
+  const renderQosStats = (title: string, data: { encode: any; decode: any }, showResolution = false) => {
+    return (
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-lg font-medium">{title}</h3>
+          <div className="flex space-x-2">
+            <span className="px-2 py-1 bg-gray-800 rounded-md text-xs">Encode</span>
+            <span className="px-2 py-1 bg-gray-800 rounded-md text-xs">Decode</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          {/* Encode Column */}
+          <div className="space-y-2">
+            <div className="bg-gray-900 rounded-lg p-3">
+              <div className="grid grid-cols-2 gap-2">
+                {showResolution && (
+                  <>
+                    <div className="text-xs text-gray-400">Resolution</div>
+                    <div className="text-xs text-right">
+                      {data.encode.width}x{data.encode.height}
+                    </div>
+                    <div className="text-xs text-gray-400">FPS</div>
+                    <div className="text-xs text-right">{data.encode.fps}</div>
+                  </>
+                )}
+                <div className="text-xs text-gray-400">Sample Rate</div>
+                <div className="text-xs text-right">{data.encode.sample_rate}</div>
+                <div className="text-xs text-gray-400">RTT</div>
+                <div className="text-xs text-right">{data.encode.rtt} ms</div>
+                <div className="text-xs text-gray-400">Jitter</div>
+                <div className="text-xs text-right">{data.encode.jitter} ms</div>
+                <div className="text-xs text-gray-400">Loss</div>
+                <div className="text-xs text-right">{data.encode.avg_loss}%</div>
+                <div className="text-xs text-gray-400">Bandwidth</div>
+                <div className="text-xs text-right">{formatBytes(data.encode.bandwidth)}</div>
+                <div className="text-xs text-gray-400">Bitrate</div>
+                <div className="text-xs text-right">{formatSpeed(data.encode.bitrate)}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Decode Column */}
+          <div className="space-y-2">
+            <div className="bg-gray-900 rounded-lg p-3">
+              <div className="grid grid-cols-2 gap-2">
+                {showResolution && (
+                  <>
+                    <div className="text-xs text-gray-400">Resolution</div>
+                    <div className="text-xs text-right">
+                      {data.decode.width}x{data.decode.height}
+                    </div>
+                    <div className="text-xs text-gray-400">FPS</div>
+                    <div className="text-xs text-right">{data.decode.fps}</div>
+                  </>
+                )}
+                <div className="text-xs text-gray-400">Sample Rate</div>
+                <div className="text-xs text-right">{data.decode.sample_rate}</div>
+                <div className="text-xs text-gray-400">RTT</div>
+                <div className="text-xs text-right">{data.decode.rtt} ms</div>
+                <div className="text-xs text-gray-400">Jitter</div>
+                <div className="text-xs text-right">{data.decode.jitter} ms</div>
+                <div className="text-xs text-gray-400">Loss</div>
+                <div className="text-xs text-right">{data.decode.avg_loss}%</div>
+                <div className="text-xs text-gray-400">Bandwidth</div>
+                <div className="text-xs text-right">{formatBytes(data.decode.bandwidth)}</div>
+                <div className="text-xs text-gray-400">Bitrate</div>
+                <div className="text-xs text-right">{formatSpeed(data.decode.bitrate)}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="rounded-lg shadow-md p-4 w-full md:w-3/4 mx-auto bg-black text-white">
-      <h2 className="text-xl font-semibold mb-2">QoS Statistics</h2>
-
-      {/* General Section */}
-      <div className="mb-4 border-b pb-2">
-        <button className="flex items-center w-full justify-between py-2" onClick={() => toggleSection("general")}>
-          <span className="font-medium">General</span>
-          <span>{isOpen.general ? "-" : "+"}</span>
-        </button>
-        {isOpen.general && (
-          <div className="pl-4">
-            {videoQosData && (
-              <p>
-                Video Sample Rate: {videoQosData.sample_rate} | FPS: {videoQosData.fps}
-              </p>
-            )}
-            {audioQosData && <p>Audio Sample Rate: {audioQosData.sample_rate}</p>}
-
-            <p>Date/Time: {new Date().toLocaleString()}</p>
-          </div>
-        )}
+    <div className="rounded-lg shadow-md p-6 w-full md:w-3/4 mx-auto bg-black text-white max-h-[90vh] overflow-y-auto">
+      <div className="sticky top-0 bg-black z-10 pb-4 mb-4 border-b border-gray-800">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">QoS Statistics</h2>
+          <span className="text-xs text-gray-400">{new Date().toLocaleString()}</span>
+        </div>
       </div>
 
-      {/* Video Section */}
-      {videoQosData && (
-        <div className="mb-4 border-b pb-2">
-          <button className="flex items-center w-full justify-between py-2" onClick={() => toggleSection("video")}>
-            <span className="font-medium">Video</span>
-            <span>{isOpen.video ? "-" : "+"}</span>
-          </button>
-          {isOpen.video && (
-            <div className="pl-4">
-              <p>
-                Resolution: {videoQosData.width} x {videoQosData.height}
-              </p>
-              <p>
-                Round Trip Time: {videoQosData.rtt} ms | Jitter: {videoQosData.jitter} ms
-              </p>
-              <p>
-                Average Loss: {videoQosData.avg_loss} % | Maximum Loss: {videoQosData.max_loss} %
-              </p>
-              <p>
-                Bandwidth: {formatBytes(videoQosData.bandwidth)} | Bitrate: {formatSpeed(videoQosData.bitrate)}
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Audio Section */}
-      {audioQosData && (
-        <div className="mb-4 border-b pb-2">
-          <button className="flex items-center w-full justify-between py-2" onClick={() => toggleSection("audio")}>
-            <span className="font-medium">Audio</span>
-            <span>{isOpen.audio ? "-" : "+"}</span>
-          </button>
-          {isOpen.audio && (
-            <div className="pl-4">
-              <p>
-                Round Trip Time: {audioQosData.rtt} ms | Jitter: {audioQosData.jitter} ms
-              </p>
-              <p>
-                Average Loss: {audioQosData.avg_loss} % | Maximum Loss: {audioQosData.max_loss} %
-              </p>
-              <p>
-                Bandwidth: {formatBytes(audioQosData.bandwidth)} | Bitrate: {formatSpeed(audioQosData.bitrate)}
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Network Section */}
-      <div className="mb-4 border-b pb-2">
-        <button className="flex items-center w-full justify-between py-2" onClick={() => toggleSection("network")}>
-          <span className="font-medium">Network</span>
-          <span>{isOpen.network ? "-" : "+"}</span>
-        </button>
-        {isOpen.network && (
-          <div className="pl-4">
-            {videoQosData && <p>Video Bandwidth: {formatSpeed(videoQosData.bandwidth)}</p>}
-            {audioQosData && <p>Audio Bandwidth: {formatSpeed(audioQosData.bandwidth)}</p>}
-          </div>
-        )}
+      <div className="space-y-6">
+        {videoQosData && renderQosStats("Video", videoQosData, true)}
+        {audioQosData && renderQosStats("Audio", audioQosData)}
+        {sharingQosData && renderQosStats("Screen Sharing", sharingQosData, true)}
       </div>
 
-      {/* Advanced Section (Optional) */}
-      <div className="mb-4">
-        <button className="flex items-center w-full justify-between py-2" onClick={() => toggleSection("advanced")}>
-          <span className="font-medium">Advanced</span>
-          <span>{isOpen.advanced ? "-" : "+"}</span>
+      {/* Advanced Section */}
+      <div className="mt-6 pt-4 border-t border-gray-800">
+        <button
+          className="flex items-center space-x-2 text-sm text-gray-400 hover:text-white transition-colors"
+          onClick={() => toggleSection("advanced")}
+        >
+          <span>{isOpen.advanced ? "Hide" : "Show"} Raw Data</span>
+          <span>{isOpen.advanced ? "−" : "+"}</span>
         </button>
+
         {isOpen.advanced && (
-          <div className="pl-4">
-            {sharingQosData && <pre className="text-xs">{JSON.stringify(sharingQosData, null, 2)}</pre>}
-            {videoQosData && <pre className="text-xs">{JSON.stringify(videoQosData, null, 2)}</pre>}
-            {audioQosData && <pre className="text-xs">{JSON.stringify(audioQosData, null, 2)}</pre>}
+          <div className="mt-4 bg-gray-900 rounded-lg p-4 overflow-x-auto">
+            <pre className="text-xs">
+              {JSON.stringify(
+                {
+                  videoQosData,
+                  audioQosData,
+                  sharingQosData,
+                },
+                null,
+                2,
+              )}
+            </pre>
           </div>
         )}
       </div>
