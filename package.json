@@ -10,7 +10,8 @@
     "react-dom": "^18.3.1",
     "react-draggable": "^4.4.6",
     "react-redux": "^9.2.0",
-    "recharts": "^2.15.0"
+    "recharts": "^2.15.0",
+    "@zoom/videosdk": "1.12.14"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",

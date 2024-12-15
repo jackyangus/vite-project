@@ -72,6 +72,7 @@ export default function HomeApp() {
         height: `${dimensions.height}px`,
         display: "block",
       }));
+      ``;
 
       // Center the container after resizing
       setPosition({
@@ -174,6 +175,8 @@ export default function HomeApp() {
 
   useEffect(() => {
     setShowControls(true);
+    setShowJoinFlow(false);
+    updateContainerSize("fullscreen");
   }, []);
 
   console.log({ isDraggable, showControls });
@@ -181,7 +184,7 @@ export default function HomeApp() {
     <div className="App" style={{ height: "100vh", width: "100vw" }}>
       <main style={{ height: "100%", width: "100%" }} id="debug-demo-container">
         {showJoinFlow && (
-          <div id="join-flow" className="debug-tool-join-flow">
+          <div id="join-flow" className="debug-tool-join-flow" onClick={() => setShowJoinFlow(false)}>
             <h1 className="debug-tool-join-title">Example</h1>
             <p className="debug-tool-join-description">
               User interface offered Vite+React+Taillwind+Eslint9+Typescript

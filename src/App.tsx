@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import QoSApp from "./QosApp";
 
 const App = () => {
   useEffect(() => {
@@ -26,7 +27,11 @@ const App = () => {
     };
   }, []);
 
-  return <div></div>;
+  return (
+    <div>
+      <QoSApp />
+    </div>
+  );
 };
 
 export default App;
