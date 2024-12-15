@@ -2,8 +2,8 @@
 
 import { AudioQosData, VideoQosData } from "@zoom/videosdk"; // Adjust the import path
 
-export const MB_TO_B = 1024 * 1024;
-export const KB_TO_B = 1024;
+export const MB_TO_B = 1000 * 1000;
+export const KB_TO_B = 1000;
 
 export const fakeAudioQosData: { encode: AudioQosData; decode: AudioQosData } = {
   encode: {

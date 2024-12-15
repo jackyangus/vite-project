@@ -44,9 +44,9 @@ const METRIC_OPTIONS: (MetricOption & { defaultVisible: boolean })[] = [
     label: "Resolution",
     color: "#FF2D55",
     defaultVisible: true,
-    format: (v) => `${v}p`,
-    unit: "p",
-    legendFormat: "Resolution Height (p)",
+    format: (v) => `${v}`,
+    unit: "P",
+    legendFormat: "Resolution Height (P)",
     axisGroup: "height",
   },
   {
@@ -551,7 +551,7 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
                 if (!metric) return [value, name];
 
                 if (metric.key === "height") {
-                  return [`${value}p (${props.payload.fullResolution})`, "Resolution"];
+                  return [`${value}P (${props.payload.fullResolution})`, "Resolution"];
                 }
 
                 const formattedValue = metric.format ? metric.format(value as number) : value;
