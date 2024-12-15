@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { AudioQosData, VideoQosData, VideoStatisticOption, StatisticOption } from "@zoom/videosdk"; // Adjust the import path
 import { fakeAudioQosData, fakeVideoQosData, fakeSharingQosData } from "./fakeQos"; // Import the fake data
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { MB_TO_B, KB_TO_B } from "./fakeQos";
 
 interface QoSDisplayProps {
   audioQosData?: { encode: AudioQosData; decode: AudioQosData };
@@ -34,6 +35,7 @@ interface MetricOption {
   yAxisFormat?: (value: number) => number;
   unit: string;
   legendFormat: string;
+  axisGroup?: "primary" | "bitrate" | "bandwidth" | "height" | "loss" | "time";
 }
 
 const METRIC_OPTIONS: (MetricOption & { defaultVisible: boolean })[] = [
@@ -45,6 +47,7 @@ const METRIC_OPTIONS: (MetricOption & { defaultVisible: boolean })[] = [
     format: (v) => `${v}p`,
     unit: "p",
     legendFormat: "Resolution Height (p)",
+    axisGroup: "height",
   },
   {
     key: "fps",
@@ -53,6 +56,7 @@ const METRIC_OPTIONS: (MetricOption & { defaultVisible: boolean })[] = [
     defaultVisible: true,
     unit: "fps",
     legendFormat: "FPS (frames/s)",
+    axisGroup: "primary",
   },
   {
     key: "rtt",
@@ -61,6 +65,7 @@ const METRIC_OPTIONS: (MetricOption & { defaultVisible: boolean })[] = [
     defaultVisible: true,
     unit: "ms",
     legendFormat: "RTT (ms)",
+    axisGroup: "time",
   },
   {
     key: "jitter",
@@ -69,6 +74,7 @@ const METRIC_OPTIONS: (MetricOption & { defaultVisible: boolean })[] = [
     defaultVisible: true,
     unit: "ms",
     legendFormat: "Jitter (ms)",
+    axisGroup: "time",
   },
   {
     key: "loss",
@@ -77,26 +83,29 @@ const METRIC_OPTIONS: (MetricOption & { defaultVisible: boolean })[] = [
     defaultVisible: true,
     unit: "%",
     legendFormat: "Packet Loss (%)",
+    axisGroup: "loss",
   },
   {
     key: "bandwidth",
     label: "Bandwidth",
     color: "#5856D6",
-    format: (v) => (v / 1024).toFixed(2),
-    yAxisFormat: (v) => Math.floor(v / 1024),
-    unit: "KB",
-    legendFormat: "Bandwidth (KB/s)",
+    format: (v) => (v / MB_TO_B).toFixed(2),
+    yAxisFormat: (v) => Math.floor(v),
+    unit: "MB/s",
+    legendFormat: "Bandwidth (MB/s)",
     defaultVisible: true,
+    axisGroup: "bandwidth",
   },
   {
     key: "bitrate",
     label: "Bitrate",
     color: "#AF52DE",
-    format: (v) => (v / 1000000).toFixed(2),
-    yAxisFormat: (v) => Math.floor(v / 1000000),
-    unit: "Mbps",
-    legendFormat: "Bitrate (Mbps)",
+    format: (v) => (v / KB_TO_B).toFixed(2), // Convert bytes to bits, then to Kb
+    yAxisFormat: (v) => v / KB_TO_B, // Same conversion for axis
+    unit: "Kbps",
+    legendFormat: "Bitrate (Kbps)",
     defaultVisible: true,
+    axisGroup: "bitrate",
   },
 ];
 
@@ -155,9 +164,12 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
   };
 
   const formatSpeed = (bps: number) => {
-    const kbps = (bps / 1000).toFixed(2);
-    const mbps = (Number(kbps) / 1000).toFixed(2);
-    return `${mbps} Mbps`;
+    const kbps = (bps / KB_TO_B).toFixed(2);
+    const mbps = (bps / MB_TO_B).toFixed(2);
+    if (Number(mbps) > 1) {
+      return `${mbps} Mbps`;
+    }
+    return `${kbps} Kbps`;
   };
 
   useEffect(() => {
@@ -456,29 +468,73 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
               stroke="#666"
               fontSize={12}
               domain={getHeightDomain()}
-              tickFormatter={(value) => `${value}p`}
+              tickFormatter={(value) => `${value}P`}
               hide={!selectedMetrics.has("height")}
             />
+
             <YAxis
-              yAxisId="default"
+              yAxisId="primary"
               orientation="left"
               stroke="#666"
               fontSize={12}
-              hide={selectedMetrics.has("height")}
-              tickFormatter={(value) => {
-                const selectedMetric = Array.from(selectedMetrics)
-                  .filter((key) => key !== "height")
-                  .find((key) => {
-                    const metric = METRIC_OPTIONS.find((m) => m.key === key);
-                    return metric?.yAxisFormat;
-                  });
+              domain={[0, "auto"]}
+              hide={
+                !Array.from(selectedMetrics).some(
+                  (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "primary",
+                )
+              }
+            />
+            <YAxis
+              yAxisId="time"
+              orientation="left"
+              stroke="#666"
+              fontSize={12}
+              domain={[0, 1000]}
+              tickFormatter={(value) => `${value}ms`}
+              hide={
+                !Array.from(selectedMetrics).some(
+                  (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "time",
+                )
+              }
+            />
+            <YAxis
+              yAxisId="loss"
+              orientation="right"
+              stroke="#666"
+              fontSize={12}
+              domain={[0, 50]}
+              tickFormatter={(value) => `${value}%`}
+              hide={
+                !Array.from(selectedMetrics).some(
+                  (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "loss",
+                )
+              }
+            />
 
-                if (selectedMetric) {
-                  const metric = METRIC_OPTIONS.find((m) => m.key === selectedMetric);
-                  return metric?.yAxisFormat ? metric.yAxisFormat(value) : value;
-                }
-                return value;
-              }}
+            <YAxis
+              yAxisId="bandwidth"
+              orientation="right"
+              stroke="#666"
+              fontSize={12}
+              tickFormatter={(value) => `${Math.floor(value / MB_TO_B)}M/s`}
+              hide={
+                !Array.from(selectedMetrics).some(
+                  (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "bandwidth",
+                )
+              }
+            />
+
+            <YAxis
+              yAxisId="bitrate"
+              orientation="right"
+              stroke="#666"
+              fontSize={12}
+              tickFormatter={(value) => `${Math.floor(value / KB_TO_B)}Kbps`}
+              hide={
+                !Array.from(selectedMetrics).some(
+                  (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "bitrate",
+                )
+              }
             />
             <Tooltip
               contentStyle={{
@@ -514,33 +570,17 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
               const metric = METRIC_OPTIONS.find((m) => m.key === metricKey);
               if (!metric) return null;
 
-              if (metric.key === "height") {
-                return (
-                  <Line
-                    key={metric.key}
-                    yAxisId="height"
-                    type="stepAfter"
-                    dataKey={metric.key}
-                    stroke={metric.color}
-                    strokeWidth={2}
-                    name={metric.legendFormat}
-                    dot={true}
-                    activeDot={{ r: 6 }}
-                  />
-                );
-              }
-
               return (
                 <Line
                   key={metric.key}
-                  yAxisId="default"
-                  type="monotone"
+                  yAxisId={metric.axisGroup || "primary"}
+                  type={metric.key === "height" ? "stepAfter" : "monotone"}
                   dataKey={metric.key}
                   stroke={metric.color}
                   strokeWidth={2}
                   name={metric.legendFormat}
-                  dot={false}
-                  activeDot={{ r: 4 }}
+                  dot={metric.key === "height"}
+                  activeDot={{ r: metric.key === "height" ? 6 : 4 }}
                 />
               );
             })}
