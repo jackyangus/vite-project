@@ -31,26 +31,71 @@ interface MetricOption {
   label: string;
   color: string;
   format?: (value: number) => string;
+  yAxisFormat?: (value: number) => number;
+  unit: string;
+  legendFormat: string;
 }
 
 const METRIC_OPTIONS: (MetricOption & { defaultVisible: boolean })[] = [
-  { key: "height", label: "Resolution", color: "#FF2D55", defaultVisible: true, format: (v) => v.toString() },
-  { key: "fps", label: "FPS", color: "#007AFF", defaultVisible: true },
-  { key: "rtt", label: "RTT (ms)", color: "#34C759", defaultVisible: true },
-  { key: "jitter", label: "Jitter (ms)", color: "#FF9500", defaultVisible: true },
-  { key: "loss", label: "Loss (%)", color: "#FF3B30", defaultVisible: true },
+  {
+    key: "height",
+    label: "Resolution",
+    color: "#FF2D55",
+    defaultVisible: true,
+    format: (v) => `${v}p`,
+    unit: "p",
+    legendFormat: "Resolution Height (p)",
+  },
+  {
+    key: "fps",
+    label: "FPS",
+    color: "#007AFF",
+    defaultVisible: true,
+    unit: "fps",
+    legendFormat: "FPS (frames/s)",
+  },
+  {
+    key: "rtt",
+    label: "RTT",
+    color: "#34C759",
+    defaultVisible: true,
+    unit: "ms",
+    legendFormat: "RTT (ms)",
+  },
+  {
+    key: "jitter",
+    label: "Jitter",
+    color: "#FF9500",
+    defaultVisible: true,
+    unit: "ms",
+    legendFormat: "Jitter (ms)",
+  },
+  {
+    key: "loss",
+    label: "Loss",
+    color: "#FF3B30",
+    defaultVisible: true,
+    unit: "%",
+    legendFormat: "Packet Loss (%)",
+  },
   {
     key: "bandwidth",
-    label: "Bandwidth (KB)",
+    label: "Bandwidth",
     color: "#5856D6",
     format: (v) => (v / 1024).toFixed(2),
+    yAxisFormat: (v) => Math.floor(v / 1024),
+    unit: "KB",
+    legendFormat: "Bandwidth (KB/s)",
     defaultVisible: true,
   },
   {
     key: "bitrate",
-    label: "Bitrate (Mbps)",
+    label: "Bitrate",
     color: "#AF52DE",
     format: (v) => (v / 1000000).toFixed(2),
+    yAxisFormat: (v) => Math.floor(v / 1000000),
+    unit: "Mbps",
+    legendFormat: "Bitrate (Mbps)",
     defaultVisible: true,
   },
 ];
@@ -369,7 +414,7 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
               }`}
               onClick={() => toggleMetric(metric.key)}
             >
-              {metric.label}
+              {metric.label} ({metric.unit})
             </button>
           ))}
         </div>
@@ -378,6 +423,17 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
   };
 
   const renderQoSChart = (data: QoSMetric[], title: string, showResolution = false) => {
+    // Get the domain for height values if they exist in the data
+    const getHeightDomain = () => {
+      if (!data.length) return [0, 100];
+      const heights = data.map((d) => d.height).filter((h) => h > 0);
+      if (!heights.length) return [0, 100];
+      const minHeight = Math.min(...heights);
+      const maxHeight = Math.max(...heights);
+      // Add some padding to the domain
+      return [Math.max(0, minHeight - 100), maxHeight + 100];
+    };
+
     return (
       <div className="bg-gray-900/50 backdrop-blur-sm rounded-2xl p-6 mb-6 shadow-lg">
         <div className="flex flex-col space-y-4 mb-6">
@@ -394,7 +450,36 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
               stroke="#666"
               fontSize={12}
             />
-            <YAxis stroke="#666" fontSize={12} />
+            <YAxis
+              yAxisId="height"
+              orientation="left"
+              stroke="#666"
+              fontSize={12}
+              domain={getHeightDomain()}
+              tickFormatter={(value) => `${value}p`}
+              hide={!selectedMetrics.has("height")}
+            />
+            <YAxis
+              yAxisId="default"
+              orientation="left"
+              stroke="#666"
+              fontSize={12}
+              hide={selectedMetrics.has("height")}
+              tickFormatter={(value) => {
+                const selectedMetric = Array.from(selectedMetrics)
+                  .filter((key) => key !== "height")
+                  .find((key) => {
+                    const metric = METRIC_OPTIONS.find((m) => m.key === key);
+                    return metric?.yAxisFormat;
+                  });
+
+                if (selectedMetric) {
+                  const metric = METRIC_OPTIONS.find((m) => m.key === selectedMetric);
+                  return metric?.yAxisFormat ? metric.yAxisFormat(value) : value;
+                }
+                return value;
+              }}
+            />
             <Tooltip
               contentStyle={{
                 backgroundColor: "rgba(0,0,0,0.8)",
@@ -406,11 +491,15 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
               }}
               labelFormatter={(timestamp) => new Date(Number(timestamp)).toLocaleTimeString()}
               formatter={(value: number | string, name: string, props) => {
-                const metric = METRIC_OPTIONS.find((m) => m.label === name);
-                if (name === "Resolution") {
-                  return [props.payload.fullResolution || value, name];
+                const metric = METRIC_OPTIONS.find((m) => m.legendFormat === name);
+                if (!metric) return [value, name];
+
+                if (metric.key === "height") {
+                  return [`${value}p (${props.payload.fullResolution})`, "Resolution"];
                 }
-                return [metric?.format ? metric.format(value as number) : value, name];
+
+                const formattedValue = metric.format ? metric.format(value as number) : value;
+                return [`${formattedValue} ${metric.unit}`, metric.label];
               }}
             />
             <Legend
@@ -429,11 +518,12 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
                 return (
                   <Line
                     key={metric.key}
+                    yAxisId="height"
                     type="stepAfter"
                     dataKey={metric.key}
                     stroke={metric.color}
                     strokeWidth={2}
-                    name={metric.label}
+                    name={metric.legendFormat}
                     dot={true}
                     activeDot={{ r: 6 }}
                   />
@@ -443,11 +533,12 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
               return (
                 <Line
                   key={metric.key}
+                  yAxisId="default"
                   type="monotone"
                   dataKey={metric.key}
                   stroke={metric.color}
                   strokeWidth={2}
-                  name={metric.label}
+                  name={metric.legendFormat}
                   dot={false}
                   activeDot={{ r: 4 }}
                 />
