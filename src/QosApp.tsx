@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { QoSDisplay } from "./debug/QOS/QoSDisplay";
+import QoSDisplay from "./debug/QOS/QoSDisplay";
 
 const QoSApp = () => {
   const [qosData, setQosData] = useState(null); // Initialize state to null
@@ -35,8 +35,7 @@ const QoSApp = () => {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <h1>QoSApp</h1>
-      <QoSDisplay /> {/* Pass the data as a prop */}
+      <QoSDisplay />
     </div>
   );
 };

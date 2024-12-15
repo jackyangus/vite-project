@@ -752,22 +752,30 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
 
   const renderMainTabs = () => {
     return (
-      <div className="flex space-x-2 mb-6 bg-gray-900/50 p-1 rounded-xl backdrop-blur-sm">
+      <div className="flex space-x-2 bg-gray-900/50 p-1 rounded-xl backdrop-blur-sm">
         <button
-          className={`flex-1 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-            mainTab === "av" ? "bg-gray-800 text-white shadow-lg" : "text-gray-400 hover:text-white"
-          }`}
-          onClick={() => setMainTab("av")}
+          className={`
+            px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+            flex items-center gap-2
+            ${mainTab === "av" ? "bg-gray-800" : "bg-gray-700"}
+            text-white
+          `}
+          onClick={() => setMainTab(mainTab === "av" ? "all" : "av")}
         >
-          Audio & Video
-        </button>
-        <button
-          className={`flex-1 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-            mainTab === "all" ? "bg-gray-800 text-white shadow-lg" : "text-gray-400 hover:text-white"
-          }`}
-          onClick={() => setMainTab("all")}
-        >
-          All Metrics
+          <div
+            className={`
+              w-8 h-4 rounded-full relative transition-all duration-200 
+              ${mainTab === "av" ? "bg-blue-500" : "bg-gray-600"}
+            `}
+          >
+            <div
+              className={`
+                absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all duration-200
+                ${mainTab === "av" ? "left-0.5" : "left-[18px]"}
+              `}
+            />
+          </div>
+          {mainTab === "av" ? "A/V/S" : "All"}
         </button>
       </div>
     );
@@ -775,11 +783,13 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
 
   const renderSubTabs = () => {
     return (
-      <div className="flex space-x-2 mb-6 bg-gray-900/50 p-1 rounded-xl backdrop-blur-sm">
+      <div className="flex space-x-2 bg-gray-900/50 p-1 rounded-xl backdrop-blur-sm">
         {videoQosData && (
           <button
-            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-              subTab === "video" ? "bg-gray-800 text-white shadow-lg" : "text-gray-400 hover:text-white"
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              subTab === "video"
+                ? "bg-gray-800 text-white shadow-lg"
+                : "text-gray-400 hover:bg-gray-800/50 hover:text-white"
             }`}
             onClick={() => setSubTab("video")}
           >
@@ -788,8 +798,10 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
         )}
         {audioQosData && (
           <button
-            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-              subTab === "audio" ? "bg-gray-800 text-white shadow-lg" : "text-gray-400 hover:text-white"
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              subTab === "audio"
+                ? "bg-gray-800 text-white shadow-lg"
+                : "text-gray-400 hover:bg-gray-800/50 hover:text-white"
             }`}
             onClick={() => setSubTab("audio")}
           >
@@ -798,8 +810,10 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
         )}
         {sharingQosData && (
           <button
-            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-              subTab === "sharing" ? "bg-gray-800 text-white shadow-lg" : "text-gray-400 hover:text-white"
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              subTab === "sharing"
+                ? "bg-gray-800 text-white shadow-lg"
+                : "text-gray-400 hover:bg-gray-800/50 hover:text-white"
             }`}
             onClick={() => setSubTab("sharing")}
           >
@@ -919,11 +933,13 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
     const referenceMetrics = selectedMetricsState[currentSection].encode;
 
     return (
-      <div className="mb-4 p-4 bg-gray-900/50 rounded-xl backdrop-blur-sm">
+      <div className="p-4 bg-gray-900/50 rounded-xl backdrop-blur-sm">
         <div className="flex justify-between items-center mb-3">
-          <h3 className="text-sm font-medium text-gray-400">Global Metric Selection</h3>
+          <h3 className="text-sm font-medium text-gray-400">Metric Selection</h3>
           <span className="text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded-full">
-            Controlling {currentSection.charAt(0).toUpperCase() + currentSection.slice(1)} Metrics
+            {mainTab === "av"
+              ? currentSection.charAt(0).toUpperCase() + currentSection.slice(1) + " Metrics"
+              : "All Metrics"}
           </span>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -933,7 +949,7 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
               className={`px-3 py-1.5 text-xs rounded-full transition-all duration-200 whitespace-nowrap ${
                 referenceMetrics.has(metric.key)
                   ? `bg-opacity-20 bg-${metric.color} text-${metric.color} ring-1 ring-${metric.color}`
-                  : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                  : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
               }`}
               onClick={() => toggleGlobalMetric(metric.key)}
             >
@@ -949,20 +965,18 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
   const renderGlobalControls = () => (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        <div className="flex space-x-2">
-          <button
-            className="px-4 py-2 text-sm rounded-lg bg-gray-800 text-gray-400 hover:bg-gray-700 transition-colors"
-            onClick={clearAllCharts}
-          >
-            Clear All Charts
-          </button>
-          <button
-            className="px-4 py-2 text-sm rounded-lg bg-gray-800 text-gray-400 hover:bg-gray-700 transition-colors"
-            onClick={resetAllCharts}
-          >
-            Reset All Charts
-          </button>
-        </div>
+        <button
+          className="px-4 py-2 text-sm rounded-lg bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+          onClick={clearAllCharts}
+        >
+          Clear All Charts
+        </button>
+        <button
+          className="px-4 py-2 text-sm rounded-lg bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+          onClick={resetAllCharts}
+        >
+          Reset All Charts
+        </button>
       </div>
       {renderGlobalMetricControls()}
     </div>
@@ -972,15 +986,25 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div
         ref={containerRef}
-        className="min-w-[320px] rounded-2xl shadow-xl p-4 sm:p-6 bg-black/90 backdrop-blur-xl text-white max-h-[90vh] overflow-auto"
+        className="min-w-[320px] rounded-2xl shadow-xl px-4 bg-black/90 backdrop-blur-xl text-white max-h-[90vh] overflow-auto"
         style={{ minHeight: "500px" }}
       >
-        <div className="sticky top-0 bg-black/90 backdrop-blur-xl z-10 pb-4 mb-4 border-b border-gray-800">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">QoS Statistics</h2>
-            <span className="text-xs text-gray-400 bg-gray-900/50 px-3 py-1.5 rounded-full">
-              {new Date().toLocaleString()}
-            </span>
+        <div className="sticky top-0 bg-black/90 backdrop-blur-xl z-10 pb-4 mb-4 border-b border-gray-800 mt-2">
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-medium text-gray-400">QoS Monitor</h2>
+              <span className="text-xs text-gray-400 bg-gray-900/50 px-3 py-1.5 rounded-full">
+                {new Date().toLocaleString()}
+              </span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">{renderGlobalControls()}</div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                {renderMainTabs()}
+                {mainTab === "av" && renderSubTabs()}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -992,19 +1016,7 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
 
           {/* Charts Display */}
           {(videoQosData || audioQosData || sharingQosData) && (
-            <div className="mt-8">
-              <h2 className="text-xl font-semibold mb-4">QoS Charts</h2>
-              {renderGlobalControls()}
-              {renderMainTabs()}
-              {mainTab === "av" ? (
-                <>
-                  {renderSubTabs()}
-                  {renderAVCharts()}
-                </>
-              ) : (
-                renderAllMetricsCharts()
-              )}
-            </div>
+            <div className="mt-8">{mainTab === "av" ? <>{renderAVCharts()}</> : renderAllMetricsCharts()}</div>
           )}
         </div>
 

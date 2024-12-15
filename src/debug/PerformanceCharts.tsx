@@ -15,6 +15,8 @@ import {
 } from "recharts";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import QoSDisplay from "./QOS/QoSDisplay";
+import QoSApp from "@/QosApp";
 
 // Apple-inspired color palette
 const LIGHT_COLORS = ["#007AFF", "#5856D6", "#FF2D55", "#FF9500"];
@@ -631,6 +633,8 @@ export const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ metrics })
           </BarChart>
         </ResponsiveContainer>
       </div>
+
+      <QoSDisplay />
     </div>
   );
 };

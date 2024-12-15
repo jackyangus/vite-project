@@ -27,11 +27,7 @@ const App = () => {
     };
   }, []);
 
-  return (
-    <div>
-      <QoSApp />
-    </div>
-  );
+  return <div></div>;
 };
 
 export default App;
