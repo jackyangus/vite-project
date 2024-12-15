@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { AudioQosData, VideoQosData, VideoStatisticOption, StatisticOption } from "@zoom/videosdk"; // Adjust the import path
 import { fakeAudioQosData, fakeVideoQosData, fakeSharingQosData } from "./fakeQos"; // Import the fake data
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -112,6 +112,26 @@ const METRIC_OPTIONS: (MetricOption & { defaultVisible: boolean })[] = [
 type MainTabType = "av" | "all";
 type SubTabType = "video" | "audio" | "sharing";
 
+// Add a custom hook for container width
+const useContainerWidth = () => {
+  const [width, setWidth] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setWidth(containerRef.current.offsetWidth);
+      }
+    };
+
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
+  }, []);
+
+  return { width, containerRef };
+};
+
 export const QoSDisplay: React.FC<QoSDisplayProps> = ({
   audioQosData = fakeAudioQosData,
   videoQosData = fakeVideoQosData,
@@ -149,6 +169,8 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
   const [sharingDecodeHistory, setSharingDecodeHistory] = useState<QoSMetric[]>([]);
 
   const MAX_HISTORY_POINTS = 30;
+
+  const { width: containerWidth, containerRef } = useContainerWidth();
 
   const toggleSection = (section) => {
     setIsOpen({ ...isOpen, [section]: !isOpen[section] });
@@ -301,8 +323,8 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
 
   const renderQosStats = (title: string, data: { encode: any; decode: any }, showResolution = false) => {
     return (
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-3">
+      <div className="min-w-[320px] mb-6 overflow-x-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-2">
           <h3 className="text-lg font-medium">{title}</h3>
           <div className="flex space-x-2">
             <span className="px-2 py-1 bg-gray-800 rounded-md text-xs">Encode</span>
@@ -310,7 +332,7 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Encode Column */}
           <div className="space-y-2">
             <div className="bg-gray-900 rounded-lg p-3">
@@ -388,12 +410,11 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
 
   const renderMetricControls = () => {
     return (
-      <div className="flex flex-col space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-medium">Metrics</h3>
+      <div className="flex flex-col space-y-4 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div className="flex space-x-2">
             <button
-              className="px-3 py-1.5 text-xs rounded-full bg-gray-800 text-gray-400 hover:bg-gray-700 transition-colors"
+              className="px-3 py-1.5 text-xs rounded-full bg-gray-800 text-gray-400 hover:bg-gray-700 transition-colors whitespace-nowrap"
               onClick={() => {
                 setSelectedMetrics(new Set());
                 localStorage.setItem("qosMetricPreferences", JSON.stringify([]));
@@ -402,7 +423,7 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
               Clear All
             </button>
             <button
-              className="px-3 py-1.5 text-xs rounded-full bg-gray-800 text-gray-400 hover:bg-gray-700 transition-colors"
+              className="px-3 py-1.5 text-xs rounded-full bg-gray-800 text-gray-400 hover:bg-gray-700 transition-colors whitespace-nowrap"
               onClick={() => {
                 const defaultMetrics = new Set(
                   METRIC_OPTIONS.filter((metric) => metric.defaultVisible).map((metric) => metric.key),
@@ -419,7 +440,7 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
           {METRIC_OPTIONS.map((metric) => (
             <button
               key={metric.key}
-              className={`px-3 py-1.5 text-xs rounded-full transition-all duration-200 ${
+              className={`px-3 py-1.5 text-xs rounded-full transition-all duration-200 whitespace-nowrap ${
                 selectedMetrics.has(metric.key)
                   ? `bg-opacity-20 bg-${metric.color} text-${metric.color} ring-1 ring-${metric.color}`
                   : "bg-gray-800 text-gray-400 hover:bg-gray-700"
@@ -435,157 +456,157 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
   };
 
   const renderQoSChart = (data: QoSMetric[], title: string, showResolution = false) => {
-    // Get the domain for height values if they exist in the data
-    const getHeightDomain = () => {
-      if (!data.length) return [0, 100];
-      const heights = data.map((d) => d.height).filter((h) => h > 0);
-      if (!heights.length) return [0, 100];
-      const minHeight = Math.min(...heights);
-      const maxHeight = Math.max(...heights);
-      // Add some padding to the domain
-      return [Math.max(0, minHeight - 100), maxHeight + 100];
-    };
+    const chartHeight = Math.max(300, Math.min(400, containerWidth * 0.5));
 
     return (
-      <div className="bg-gray-900/50 backdrop-blur-sm rounded-2xl p-6 mb-6 shadow-lg">
+      <div className="min-w-[320px] bg-gray-900/50 backdrop-blur-sm rounded-2xl p-3 sm:p-6 mb-6 shadow-lg">
         <div className="flex flex-col space-y-4 mb-6">
-          <h3 className="text-lg font-medium">{title}</h3>
-          {renderMetricControls()}
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <h3 className="text-lg font-medium">{title}</h3>
+            {renderMetricControls()}
+          </div>
         </div>
 
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#333" opacity={0.5} />
-            <XAxis
-              dataKey="timestamp"
-              tickFormatter={(timestamp) => new Date(timestamp).toLocaleTimeString()}
-              stroke="#666"
-              fontSize={12}
-            />
-            <YAxis
-              yAxisId="height"
-              orientation="left"
-              stroke="#666"
-              fontSize={12}
-              domain={getHeightDomain()}
-              tickFormatter={(value) => `${value}P`}
-              hide={!selectedMetrics.has("height")}
-            />
-
-            <YAxis
-              yAxisId="primary"
-              orientation="left"
-              stroke="#666"
-              fontSize={12}
-              domain={[0, "auto"]}
-              hide={
-                !Array.from(selectedMetrics).some(
-                  (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "primary",
-                )
-              }
-            />
-            <YAxis
-              yAxisId="time"
-              orientation="left"
-              stroke="#666"
-              fontSize={12}
-              domain={[0, 1000]}
-              tickFormatter={(value) => `${value}ms`}
-              hide={
-                !Array.from(selectedMetrics).some(
-                  (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "time",
-                )
-              }
-            />
-            <YAxis
-              yAxisId="loss"
-              orientation="right"
-              stroke="#666"
-              fontSize={12}
-              domain={[0, 50]}
-              tickFormatter={(value) => `${value}%`}
-              hide={
-                !Array.from(selectedMetrics).some(
-                  (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "loss",
-                )
-              }
-            />
-
-            <YAxis
-              yAxisId="bandwidth"
-              orientation="right"
-              stroke="#666"
-              fontSize={12}
-              tickFormatter={(value) => `${Math.floor(value / MB_TO_B)}M/s`}
-              hide={
-                !Array.from(selectedMetrics).some(
-                  (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "bandwidth",
-                )
-              }
-            />
-
-            <YAxis
-              yAxisId="bitrate"
-              orientation="right"
-              stroke="#666"
-              fontSize={12}
-              tickFormatter={(value) => `${Math.floor(value / KB_TO_B)}Kbps`}
-              hide={
-                !Array.from(selectedMetrics).some(
-                  (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "bitrate",
-                )
-              }
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "rgba(0,0,0,0.8)",
-                border: "none",
-                borderRadius: "12px",
-                backdropFilter: "blur(12px)",
-                boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-                padding: "12px",
-              }}
-              labelFormatter={(timestamp) => new Date(Number(timestamp)).toLocaleTimeString()}
-              formatter={(value: number | string, name: string, props) => {
-                const metric = METRIC_OPTIONS.find((m) => m.legendFormat === name);
-                if (!metric) return [value, name];
-
-                if (metric.key === "height") {
-                  return [`${value}P (${props.payload.fullResolution})`, "Resolution"];
-                }
-
-                const formattedValue = metric.format ? metric.format(value as number) : value;
-                return [`${formattedValue} ${metric.unit}`, metric.label];
-              }}
-            />
-            <Legend
-              verticalAlign="top"
-              height={36}
-              wrapperStyle={{
-                paddingBottom: "20px",
-                fontSize: "12px",
-              }}
-            />
-            {Array.from(selectedMetrics).map((metricKey) => {
-              const metric = METRIC_OPTIONS.find((m) => m.key === metricKey);
-              if (!metric) return null;
-
-              return (
-                <Line
-                  key={metric.key}
-                  yAxisId={metric.axisGroup || "primary"}
-                  type={metric.key === "height" ? "stepAfter" : "monotone"}
-                  dataKey={metric.key}
-                  stroke={metric.color}
-                  strokeWidth={2}
-                  name={metric.legendFormat}
-                  dot={metric.key === "height"}
-                  activeDot={{ r: metric.key === "height" ? 6 : 4 }}
+        <div className="overflow-x-auto">
+          <div style={{ minWidth: "640px", width: "100%", height: chartHeight }}>
+            <ResponsiveContainer>
+              <LineChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#333" opacity={0.5} />
+                <XAxis
+                  dataKey="timestamp"
+                  tickFormatter={(timestamp) => new Date(timestamp).toLocaleTimeString()}
+                  stroke="#666"
+                  fontSize={12}
                 />
-              );
-            })}
-          </LineChart>
-        </ResponsiveContainer>
+                <YAxis
+                  yAxisId="height"
+                  orientation="left"
+                  stroke="#666"
+                  fontSize={12}
+                  domain={[0, "auto"]}
+                  hide={
+                    !Array.from(selectedMetrics).some(
+                      (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "height",
+                    )
+                  }
+                />
+
+                <YAxis
+                  yAxisId="primary"
+                  orientation="left"
+                  stroke="#666"
+                  fontSize={12}
+                  domain={[0, "auto"]}
+                  hide={
+                    !Array.from(selectedMetrics).some(
+                      (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "primary",
+                    )
+                  }
+                />
+                <YAxis
+                  yAxisId="time"
+                  orientation="left"
+                  stroke="#666"
+                  fontSize={12}
+                  domain={[0, 1000]}
+                  tickFormatter={(value) => `${value}ms`}
+                  hide={
+                    !Array.from(selectedMetrics).some(
+                      (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "time",
+                    )
+                  }
+                />
+                <YAxis
+                  yAxisId="loss"
+                  orientation="right"
+                  stroke="#666"
+                  fontSize={12}
+                  domain={[0, 50]}
+                  tickFormatter={(value) => `${value}%`}
+                  hide={
+                    !Array.from(selectedMetrics).some(
+                      (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "loss",
+                    )
+                  }
+                />
+
+                <YAxis
+                  yAxisId="bandwidth"
+                  orientation="right"
+                  stroke="#666"
+                  fontSize={12}
+                  tickFormatter={(value) => `${Math.floor(value / MB_TO_B)}M/s`}
+                  hide={
+                    !Array.from(selectedMetrics).some(
+                      (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "bandwidth",
+                    )
+                  }
+                />
+
+                <YAxis
+                  yAxisId="bitrate"
+                  orientation="right"
+                  stroke="#666"
+                  fontSize={12}
+                  tickFormatter={(value) => `${Math.floor(value / KB_TO_B)}Kbps`}
+                  hide={
+                    !Array.from(selectedMetrics).some(
+                      (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "bitrate",
+                    )
+                  }
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "rgba(0,0,0,0.8)",
+                    border: "none",
+                    borderRadius: "12px",
+                    backdropFilter: "blur(12px)",
+                    boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+                    padding: "12px",
+                  }}
+                  labelFormatter={(timestamp) => new Date(Number(timestamp)).toLocaleTimeString()}
+                  formatter={(value: number | string, name: string, props) => {
+                    const metric = METRIC_OPTIONS.find((m) => m.legendFormat === name);
+                    if (!metric) return [value, name];
+
+                    if (metric.key === "height") {
+                      return [`${value}P (${props.payload.fullResolution})`, "Resolution"];
+                    }
+
+                    const formattedValue = metric.format ? metric.format(value as number) : value;
+                    return [`${formattedValue} ${metric.unit}`, metric.label];
+                  }}
+                />
+                <Legend
+                  verticalAlign="top"
+                  height={36}
+                  wrapperStyle={{
+                    paddingBottom: "20px",
+                    fontSize: containerWidth < 768 ? "10px" : "12px",
+                  }}
+                />
+                {Array.from(selectedMetrics).map((metricKey) => {
+                  const metric = METRIC_OPTIONS.find((m) => m.key === metricKey);
+                  if (!metric) return null;
+
+                  return (
+                    <Line
+                      key={metric.key}
+                      yAxisId={metric.axisGroup || "primary"}
+                      type={metric.key === "height" ? "stepAfter" : "monotone"}
+                      dataKey={metric.key}
+                      stroke={metric.color}
+                      strokeWidth={2}
+                      name={metric.legendFormat}
+                      dot={metric.key === "height"}
+                      activeDot={{ r: metric.key === "height" ? 6 : 4 }}
+                    />
+                  );
+                })}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
     );
   };
@@ -702,64 +723,57 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
   };
 
   return (
-    <div className="rounded-2xl shadow-xl p-6 w-full md:w-3/4 mx-auto bg-black/90 backdrop-blur-xl text-white max-h-[90vh] overflow-y-auto">
-      <div className="sticky top-0 bg-black/90 backdrop-blur-xl z-10 pb-4 mb-4 border-b border-gray-800">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">QoS Statistics</h2>
-          <span className="text-xs text-gray-400 bg-gray-900/50 px-3 py-1.5 rounded-full">
-            {new Date().toLocaleString()}
-          </span>
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div
+        ref={containerRef}
+        className="min-w-[320px] rounded-2xl shadow-xl p-4 sm:p-6 bg-black/90 backdrop-blur-xl text-white max-h-[90vh] overflow-auto"
+      >
+        <div className="sticky top-0 bg-black/90 backdrop-blur-xl z-10 pb-4 mb-4 border-b border-gray-800">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">QoS Statistics</h2>
+            <span className="text-xs text-gray-400 bg-gray-900/50 px-3 py-1.5 rounded-full">
+              {new Date().toLocaleString()}
+            </span>
+          </div>
         </div>
-      </div>
 
-      <div className="space-y-6">
-        {/* Stats Display */}
-        {videoQosData && renderQosStats("Video", videoQosData, true)}
-        {audioQosData && renderQosStats("Audio", audioQosData)}
-        {sharingQosData && renderQosStats("Screen Sharing", sharingQosData, true)}
+        <div className="space-y-6">
+          {/* Stats Display */}
+          {videoQosData && renderQosStats("Video", videoQosData, true)}
+          {audioQosData && renderQosStats("Audio", audioQosData)}
+          {sharingQosData && renderQosStats("Screen Sharing", sharingQosData, true)}
 
-        {/* Charts Display */}
-        {(videoQosData || audioQosData || sharingQosData) && (
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-4">QoS Charts</h2>
-            {renderMainTabs()}
-            {mainTab === "av" ? (
-              <>
-                {renderSubTabs()}
-                {renderAVCharts()}
-              </>
-            ) : (
-              renderAllMetricsCharts()
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Advanced Section */}
-      <div className="mt-6 pt-4 border-t border-gray-800">
-        <button
-          className="flex items-center space-x-2 text-sm text-gray-400 hover:text-white transition-colors"
-          onClick={() => toggleSection("advanced")}
-        >
-          <span>{isOpen.advanced ? "Hide" : "Show"} Raw Data</span>
-          <span>{isOpen.advanced ? "−" : "+"}</span>
-        </button>
-
-        {isOpen.advanced && (
-          <div className="mt-4 bg-gray-900 rounded-lg p-4 overflow-x-auto">
-            <pre className="text-xs">
-              {JSON.stringify(
-                {
-                  videoQosData,
-                  audioQosData,
-                  sharingQosData,
-                },
-                null,
-                2,
+          {/* Charts Display */}
+          {(videoQosData || audioQosData || sharingQosData) && (
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold mb-4">QoS Charts</h2>
+              {renderMainTabs()}
+              {mainTab === "av" ? (
+                <>
+                  {renderSubTabs()}
+                  {renderAVCharts()}
+                </>
+              ) : (
+                renderAllMetricsCharts()
               )}
-            </pre>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
+
+        {/* Advanced Section */}
+        <div className="min-w-[680px] mt-4 bg-gray-900 rounded-lg p-4 overflow-x-auto">
+          <pre className="text-xs">
+            {JSON.stringify(
+              {
+                videoQosData,
+                audioQosData,
+                sharingQosData,
+              },
+              null,
+              2,
+            )}
+          </pre>
+        </div>
       </div>
     </div>
   );
