@@ -876,14 +876,16 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
     });
   };
 
-  // Update the toggleGlobalMetric function to only affect the current section
+  // Update the toggleGlobalMetric function
   const toggleGlobalMetric = (metricKey: string) => {
     setSelectedMetricsState((prev) => {
-      const newState = { ...prev };
-      const currentSection = subTab; // Get current active section
-      const isMetricEnabled = prev[currentSection].encode.has(metricKey); // Check current state
+      const currentSection = subTab;
+      const isMetricEnabled = prev[currentSection].encode.has(metricKey);
 
-      // Only toggle metrics for the current section
+      // Create a new state object
+      const newState = { ...prev };
+
+      // Convert Set to Array before storing in localStorage
       Object.keys(newState[currentSection]).forEach((mode) => {
         const metrics = new Set(newState[currentSection][mode]);
         if (isMetricEnabled) {
@@ -894,7 +896,18 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
         newState[currentSection][mode] = metrics;
       });
 
-      localStorage.setItem("qosMetricPreferences", JSON.stringify(newState));
+      // Convert Sets to Arrays before storing in localStorage
+      const storageState = Object.fromEntries(
+        Object.entries(newState).map(([section, modes]) => [
+          section,
+          {
+            encode: Array.from(modes.encode),
+            decode: Array.from(modes.decode),
+          },
+        ]),
+      );
+
+      localStorage.setItem("qosMetricPreferences", JSON.stringify(storageState));
       return newState;
     });
   };
