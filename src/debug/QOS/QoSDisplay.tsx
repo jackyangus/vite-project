@@ -114,23 +114,59 @@ type SubTabType = "video" | "audio" | "sharing";
 
 // Add a custom hook for container width
 const useContainerWidth = () => {
-  const [width, setWidth] = useState(0);
+  const [width, setWidth] = useState(640);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const updateWidth = () => {
       if (containerRef.current) {
-        setWidth(containerRef.current.offsetWidth);
+        const newWidth = containerRef.current.offsetWidth;
+        if (newWidth > 0) {
+          setWidth(newWidth);
+        }
       }
     };
 
-    updateWidth();
+    const initialTimer = setTimeout(updateWidth, 100);
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      const newWidth = entries[0]?.contentRect.width;
+      if (newWidth > 0) {
+        setWidth(newWidth);
+      }
+    });
+
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+
     window.addEventListener("resize", updateWidth);
-    return () => window.removeEventListener("resize", updateWidth);
+
+    return () => {
+      clearTimeout(initialTimer);
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateWidth);
+    };
   }, []);
 
   return { width, containerRef };
 };
+
+// Add new interface for chart metrics state
+interface ChartMetricsState {
+  video: {
+    encode: Set<string>;
+    decode: Set<string>;
+  };
+  audio: {
+    encode: Set<string>;
+    decode: Set<string>;
+  };
+  sharing: {
+    encode: Set<string>;
+    decode: Set<string>;
+  };
+}
 
 export const QoSDisplay: React.FC<QoSDisplayProps> = ({
   audioQosData = fakeAudioQosData,
@@ -148,16 +184,48 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
     network: true,
     advanced: false,
   });
-  const [selectedMetrics, setSelectedMetrics] = useState<Set<string>>(() => {
+  const [selectedMetricsState, setSelectedMetricsState] = useState<ChartMetricsState>(() => {
     const savedPreferences = localStorage.getItem("qosMetricPreferences");
+    const defaultMetrics = new Set(
+      METRIC_OPTIONS.filter((metric) => metric.defaultVisible).map((metric) => metric.key),
+    );
+
     if (savedPreferences) {
       try {
-        return new Set(JSON.parse(savedPreferences));
+        const parsed = JSON.parse(savedPreferences);
+        return {
+          video: {
+            encode: new Set(parsed?.video?.encode || defaultMetrics),
+            decode: new Set(parsed?.video?.decode || defaultMetrics),
+          },
+          audio: {
+            encode: new Set(parsed?.audio?.encode || defaultMetrics),
+            decode: new Set(parsed?.audio?.decode || defaultMetrics),
+          },
+          sharing: {
+            encode: new Set(parsed?.sharing?.encode || defaultMetrics),
+            decode: new Set(parsed?.sharing?.decode || defaultMetrics),
+          },
+        };
       } catch (e) {
         console.error("Failed to parse saved preferences");
       }
     }
-    return new Set(METRIC_OPTIONS.map((metric) => metric.key));
+
+    return {
+      video: {
+        encode: new Set(defaultMetrics),
+        decode: new Set(defaultMetrics),
+      },
+      audio: {
+        encode: new Set(defaultMetrics),
+        decode: new Set(defaultMetrics),
+      },
+      sharing: {
+        encode: new Set(defaultMetrics),
+        decode: new Set(defaultMetrics),
+      },
+    };
   });
   const [encodeHistory, setEncodeHistory] = useState<QoSMetric[]>([]);
   const [decodeHistory, setDecodeHistory] = useState<QoSMetric[]>([]);
@@ -397,18 +465,59 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
     );
   };
 
-  const toggleMetric = (metricKey: string) => {
-    const newSelected = new Set(selectedMetrics);
-    if (selectedMetrics.has(metricKey)) {
-      newSelected.delete(metricKey);
-    } else {
-      newSelected.add(metricKey);
-    }
-    setSelectedMetrics(newSelected);
-    localStorage.setItem("qosMetricPreferences", JSON.stringify(Array.from(newSelected)));
+  const toggleMetric = (metricKey: string, chartType: "video" | "audio" | "sharing", mode: "encode" | "decode") => {
+    setSelectedMetricsState((prev) => {
+      const newState = { ...prev };
+      const metrics = new Set(prev[chartType][mode]);
+
+      if (metrics.has(metricKey)) {
+        metrics.delete(metricKey);
+      } else {
+        metrics.add(metricKey);
+      }
+
+      newState[chartType][mode] = metrics;
+      localStorage.setItem("qosMetricPreferences", JSON.stringify(newState));
+      return newState;
+    });
   };
 
-  const renderMetricControls = () => {
+  const clearAllCharts = () => {
+    const currentSection = subTab;
+
+    setSelectedMetricsState((prev) => {
+      const newState = { ...prev };
+      newState[currentSection] = {
+        encode: new Set(),
+        decode: new Set(),
+      };
+      localStorage.setItem("qosMetricPreferences", JSON.stringify(newState));
+      return newState;
+    });
+  };
+
+  const resetAllCharts = () => {
+    const defaultMetrics = new Set(
+      METRIC_OPTIONS.filter((metric) => metric.defaultVisible).map((metric) => metric.key),
+    );
+    const currentSection = subTab;
+
+    setSelectedMetricsState((prev) => {
+      const newState = { ...prev };
+      newState[currentSection] = {
+        encode: new Set(defaultMetrics),
+        decode: new Set(defaultMetrics),
+      };
+      localStorage.setItem("qosMetricPreferences", JSON.stringify(newState));
+      return newState;
+    });
+  };
+
+  const renderMetricControls = (
+    chartType: "video" | "audio" | "sharing",
+    mode: "encode" | "decode",
+    disableMetrics: string[] = [],
+  ) => {
     return (
       <div className="flex flex-col space-y-4 w-full sm:w-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -416,11 +525,15 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
             <button
               className="px-3 py-1.5 text-xs rounded-full bg-gray-800 text-gray-400 hover:bg-gray-700 transition-colors whitespace-nowrap"
               onClick={() => {
-                setSelectedMetrics(new Set());
-                localStorage.setItem("qosMetricPreferences", JSON.stringify([]));
+                setSelectedMetricsState((prev) => {
+                  const newState = { ...prev };
+                  newState[chartType][mode] = new Set();
+                  localStorage.setItem("qosMetricPreferences", JSON.stringify(newState));
+                  return newState;
+                });
               }}
             >
-              Clear All
+              Clear
             </button>
             <button
               className="px-3 py-1.5 text-xs rounded-full bg-gray-800 text-gray-400 hover:bg-gray-700 transition-colors whitespace-nowrap"
@@ -428,24 +541,28 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
                 const defaultMetrics = new Set(
                   METRIC_OPTIONS.filter((metric) => metric.defaultVisible).map((metric) => metric.key),
                 );
-                setSelectedMetrics(defaultMetrics);
-                localStorage.setItem("qosMetricPreferences", JSON.stringify(Array.from(defaultMetrics)));
+                setSelectedMetricsState((prev) => {
+                  const newState = { ...prev };
+                  newState[chartType][mode] = defaultMetrics;
+                  localStorage.setItem("qosMetricPreferences", JSON.stringify(newState));
+                  return newState;
+                });
               }}
             >
-              Reset to Default
+              Reset
             </button>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          {METRIC_OPTIONS.map((metric) => (
+          {METRIC_OPTIONS.filter((metric) => !disableMetrics.includes(metric.key)).map((metric) => (
             <button
               key={metric.key}
               className={`px-3 py-1.5 text-xs rounded-full transition-all duration-200 whitespace-nowrap ${
-                selectedMetrics.has(metric.key)
+                selectedMetricsState[chartType][mode].has(metric.key)
                   ? `bg-opacity-20 bg-${metric.color} text-${metric.color} ring-1 ring-${metric.color}`
                   : "bg-gray-800 text-gray-400 hover:bg-gray-700"
               }`}
-              onClick={() => toggleMetric(metric.key)}
+              onClick={() => toggleMetric(metric.key, chartType, mode)}
             >
               {metric.label} ({metric.unit})
             </button>
@@ -455,7 +572,14 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
     );
   };
 
-  const renderQoSChart = (data: QoSMetric[], title: string, showResolution = false) => {
+  const renderQoSChart = (
+    data: QoSMetric[],
+    title: string,
+    chartType: "video" | "audio" | "sharing",
+    mode: "encode" | "decode",
+    showResolution = false,
+  ) => {
+    const selectedMetrics = selectedMetricsState?.[chartType]?.[mode] || new Set();
     const chartHeight = Math.max(300, Math.min(400, containerWidth * 0.5));
 
     return (
@@ -463,14 +587,22 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
         <div className="flex flex-col space-y-4 mb-6">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <h3 className="text-lg font-medium">{title}</h3>
-            {renderMetricControls()}
+            {renderMetricControls(chartType, mode, chartType === "audio" ? ["height", "fps"] : [])}
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <div style={{ minWidth: "640px", width: "100%", height: chartHeight }}>
-            <ResponsiveContainer>
-              <LineChart data={data}>
+          <div
+            style={{
+              minWidth: "640px",
+              width: "100%",
+              minHeight: "300px",
+              height: chartHeight,
+              position: "relative",
+            }}
+          >
+            <ResponsiveContainer width="100%" height={chartHeight} minHeight={300} aspect={undefined} debounce={1}>
+              <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }} style={{ minHeight: "300px" }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" opacity={0.5} />
                 <XAxis
                   dataKey="timestamp"
@@ -478,31 +610,37 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
                   stroke="#666"
                   fontSize={12}
                 />
-                <YAxis
-                  yAxisId="height"
-                  orientation="left"
-                  stroke="#666"
-                  fontSize={12}
-                  domain={[0, "auto"]}
-                  hide={
-                    !Array.from(selectedMetrics).some(
-                      (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "height",
-                    )
-                  }
-                />
+                {chartType !== "audio" && (
+                  <YAxis
+                    yAxisId="height"
+                    orientation="left"
+                    stroke="#666"
+                    fontSize={12}
+                    domain={[0, "auto"]}
+                    tickFormatter={(value) => `${value}P`}
+                    hide={
+                      !Array.from(selectedMetrics).some(
+                        (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "height",
+                      )
+                    }
+                  />
+                )}
+                {chartType !== "audio" && (
+                  <YAxis
+                    yAxisId="primary"
+                    orientation="left"
+                    stroke="#666"
+                    fontSize={12}
+                    domain={[0, "auto"]}
+                    tickFormatter={(value) => `${value}FPS`}
+                    hide={
+                      !Array.from(selectedMetrics).some(
+                        (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "primary",
+                      )
+                    }
+                  />
+                )}
 
-                <YAxis
-                  yAxisId="primary"
-                  orientation="left"
-                  stroke="#666"
-                  fontSize={12}
-                  domain={[0, "auto"]}
-                  hide={
-                    !Array.from(selectedMetrics).some(
-                      (key) => METRIC_OPTIONS.find((m) => m.key === key)?.axisGroup === "primary",
-                    )
-                  }
-                />
                 <YAxis
                   yAxisId="time"
                   orientation="left"
@@ -588,7 +726,8 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
                 {Array.from(selectedMetrics).map((metricKey) => {
                   const metric = METRIC_OPTIONS.find((m) => m.key === metricKey);
                   if (!metric) return null;
-
+                  if (chartType === "audio" && metric.key === "height") return null;
+                  if (chartType === "audio" && metric.key === "fps") return null;
                   return (
                     <Line
                       key={metric.key}
@@ -676,22 +815,22 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
       case "video":
         return (
           <>
-            {renderQoSChart(encodeHistory, "Video Encode Metrics", true)}
-            {renderQoSChart(decodeHistory, "Video Decode Metrics", true)}
+            {renderQoSChart(encodeHistory, "Video Encode Metrics", "video", "encode", true)}
+            {renderQoSChart(decodeHistory, "Video Decode Metrics", "video", "decode", true)}
           </>
         );
       case "audio":
         return (
           <>
-            {renderQoSChart(audioEncodeHistory, "Audio Encode Metrics", false)}
-            {renderQoSChart(audioDecodeHistory, "Audio Decode Metrics", false)}
+            {renderQoSChart(audioEncodeHistory, "Audio Encode Metrics", "audio", "encode", false)}
+            {renderQoSChart(audioDecodeHistory, "Audio Decode Metrics", "audio", "decode", false)}
           </>
         );
       case "sharing":
         return (
           <>
-            {renderQoSChart(sharingEncodeHistory, "Screen Sharing Encode Metrics", true)}
-            {renderQoSChart(sharingDecodeHistory, "Screen Sharing Decode Metrics", true)}
+            {renderQoSChart(sharingEncodeHistory, "Screen Sharing Encode Metrics", "sharing", "encode", true)}
+            {renderQoSChart(sharingDecodeHistory, "Screen Sharing Decode Metrics", "sharing", "decode", true)}
           </>
         );
     }
@@ -702,31 +841,126 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
       <div className="space-y-6">
         {videoQosData && (
           <>
-            {renderQoSChart(encodeHistory, "Video Encode Metrics", true)}
-            {renderQoSChart(decodeHistory, "Video Decode Metrics", true)}
+            {renderQoSChart(encodeHistory, "Video Encode Metrics", "video", "encode", true)}
+            {renderQoSChart(decodeHistory, "Video Decode Metrics", "video", "decode", true)}
           </>
         )}
         {audioQosData && (
           <>
-            {renderQoSChart(audioEncodeHistory, "Audio Encode Metrics", false)}
-            {renderQoSChart(audioDecodeHistory, "Audio Decode Metrics", false)}
+            {renderQoSChart(audioEncodeHistory, "Audio Encode Metrics", "audio", "encode", false)}
+            {renderQoSChart(audioDecodeHistory, "Audio Decode Metrics", "audio", "decode", false)}
           </>
         )}
         {sharingQosData && (
           <>
-            {renderQoSChart(sharingEncodeHistory, "Screen Sharing Encode Metrics", true)}
-            {renderQoSChart(sharingDecodeHistory, "Screen Sharing Decode Metrics", true)}
+            {renderQoSChart(sharingEncodeHistory, "Screen Sharing Encode Metrics", "sharing", "encode", true)}
+            {renderQoSChart(sharingDecodeHistory, "Screen Sharing Decode Metrics", "sharing", "decode", true)}
           </>
         )}
       </div>
     );
   };
 
+  const toggleAllMetrics = (show: boolean) => {
+    const metrics = show ? new Set(METRIC_OPTIONS.map((metric) => metric.key)) : new Set();
+    const currentSection = subTab;
+
+    setSelectedMetricsState((prev) => {
+      const newState = { ...prev };
+      newState[currentSection] = {
+        encode: new Set(metrics),
+        decode: new Set(metrics),
+      };
+      localStorage.setItem("qosMetricPreferences", JSON.stringify(newState));
+      return newState;
+    });
+  };
+
+  // Update the toggleGlobalMetric function to only affect the current section
+  const toggleGlobalMetric = (metricKey: string) => {
+    setSelectedMetricsState((prev) => {
+      const newState = { ...prev };
+      const currentSection = subTab; // Get current active section
+      const isMetricEnabled = prev[currentSection].encode.has(metricKey); // Check current state
+
+      // Only toggle metrics for the current section
+      Object.keys(newState[currentSection]).forEach((mode) => {
+        const metrics = new Set(newState[currentSection][mode]);
+        if (isMetricEnabled) {
+          metrics.delete(metricKey);
+        } else {
+          metrics.add(metricKey);
+        }
+        newState[currentSection][mode] = metrics;
+      });
+
+      localStorage.setItem("qosMetricPreferences", JSON.stringify(newState));
+      return newState;
+    });
+  };
+
+  // Update the renderGlobalMetricControls to show current section state
+  const renderGlobalMetricControls = () => {
+    const currentSection = subTab;
+    // Use current section's encode as reference for state
+    const referenceMetrics = selectedMetricsState[currentSection].encode;
+
+    return (
+      <div className="mb-4 p-4 bg-gray-900/50 rounded-xl backdrop-blur-sm">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-sm font-medium text-gray-400">Global Metric Selection</h3>
+          <span className="text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded-full">
+            Controlling {currentSection.charAt(0).toUpperCase() + currentSection.slice(1)} Metrics
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {METRIC_OPTIONS.map((metric) => (
+            <button
+              key={metric.key}
+              className={`px-3 py-1.5 text-xs rounded-full transition-all duration-200 whitespace-nowrap ${
+                referenceMetrics.has(metric.key)
+                  ? `bg-opacity-20 bg-${metric.color} text-${metric.color} ring-1 ring-${metric.color}`
+                  : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+              }`}
+              onClick={() => toggleGlobalMetric(metric.key)}
+            >
+              {metric.label} ({metric.unit})
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Update the renderGlobalControls to include the new metric selector
+  const renderGlobalControls = () => (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        <div className="flex space-x-2">
+          <button
+            className="px-4 py-2 text-sm rounded-lg bg-gray-800 text-gray-400 hover:bg-gray-700 transition-colors"
+            onClick={clearAllCharts}
+          >
+            Clear All Charts
+          </button>
+          <button
+            className="px-4 py-2 text-sm rounded-lg bg-gray-800 text-gray-400 hover:bg-gray-700 transition-colors"
+            onClick={resetAllCharts}
+          >
+            Reset All Charts
+          </button>
+        </div>
+      </div>
+      {renderGlobalMetricControls()}
+    </div>
+  );
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div
         ref={containerRef}
         className="min-w-[320px] rounded-2xl shadow-xl p-4 sm:p-6 bg-black/90 backdrop-blur-xl text-white max-h-[90vh] overflow-auto"
+        style={{ minHeight: "500px" }}
       >
         <div className="sticky top-0 bg-black/90 backdrop-blur-xl z-10 pb-4 mb-4 border-b border-gray-800">
           <div className="flex justify-between items-center">
@@ -747,6 +981,7 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
           {(videoQosData || audioQosData || sharingQosData) && (
             <div className="mt-8">
               <h2 className="text-xl font-semibold mb-4">QoS Charts</h2>
+              {renderGlobalControls()}
               {renderMainTabs()}
               {mainTab === "av" ? (
                 <>
