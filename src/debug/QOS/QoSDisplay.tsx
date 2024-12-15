@@ -15,7 +15,8 @@ interface QoSDisplayProps {
 
 interface QoSMetric {
   timestamp: number;
-  resolution: string;
+  height: number;
+  fullResolution: string;
   fps: number;
   sampleRate: number;
   rtt: number;
@@ -32,13 +33,26 @@ interface MetricOption {
   format?: (value: number) => string;
 }
 
-const METRIC_OPTIONS: MetricOption[] = [
-  { key: "fps", label: "FPS", color: "#8884d8" },
-  { key: "rtt", label: "RTT (ms)", color: "#82ca9d" },
-  { key: "jitter", label: "Jitter (ms)", color: "#ffc658" },
-  { key: "loss", label: "Loss (%)", color: "#ff7300" },
-  { key: "bandwidth", label: "Bandwidth (KB)", color: "#e91e63", format: (v) => (v / 1024).toFixed(2) },
-  { key: "bitrate", label: "Bitrate (Mbps)", color: "#2196f3", format: (v) => (v / 1000000).toFixed(2) },
+const METRIC_OPTIONS: (MetricOption & { defaultVisible: boolean })[] = [
+  { key: "height", label: "Resolution", color: "#FF2D55", defaultVisible: true, format: (v) => v.toString() },
+  { key: "fps", label: "FPS", color: "#007AFF", defaultVisible: true },
+  { key: "rtt", label: "RTT (ms)", color: "#34C759", defaultVisible: true },
+  { key: "jitter", label: "Jitter (ms)", color: "#FF9500", defaultVisible: true },
+  { key: "loss", label: "Loss (%)", color: "#FF3B30", defaultVisible: true },
+  {
+    key: "bandwidth",
+    label: "Bandwidth (KB)",
+    color: "#5856D6",
+    format: (v) => (v / 1024).toFixed(2),
+    defaultVisible: true,
+  },
+  {
+    key: "bitrate",
+    label: "Bitrate (Mbps)",
+    color: "#AF52DE",
+    format: (v) => (v / 1000000).toFixed(2),
+    defaultVisible: true,
+  },
 ];
 
 type MainTabType = "av" | "all";
@@ -60,7 +74,17 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
     network: true,
     advanced: false,
   });
-  const [selectedMetrics, setSelectedMetrics] = useState<Set<string>>(new Set(["fps", "bitrate"]));
+  const [selectedMetrics, setSelectedMetrics] = useState<Set<string>>(() => {
+    const savedPreferences = localStorage.getItem("qosMetricPreferences");
+    if (savedPreferences) {
+      try {
+        return new Set(JSON.parse(savedPreferences));
+      } catch (e) {
+        console.error("Failed to parse saved preferences");
+      }
+    }
+    return new Set(METRIC_OPTIONS.map((metric) => metric.key));
+  });
   const [encodeHistory, setEncodeHistory] = useState<QoSMetric[]>([]);
   const [decodeHistory, setDecodeHistory] = useState<QoSMetric[]>([]);
   const [mainTab, setMainTab] = useState<MainTabType>("av");
@@ -114,7 +138,8 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
         setEncodeHistory((prev) => {
           const newPoint: QoSMetric = {
             timestamp,
-            resolution: `${videoQosData.encode.width}x${videoQosData.encode.height}`,
+            height: videoQosData.encode.height,
+            fullResolution: `${videoQosData.encode.width}x${videoQosData.encode.height}`,
             fps: videoQosData.encode.fps,
             sampleRate: videoQosData.encode.sample_rate,
             rtt: videoQosData.encode.rtt,
@@ -129,7 +154,8 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
         setDecodeHistory((prev) => {
           const newPoint: QoSMetric = {
             timestamp,
-            resolution: `${videoQosData.decode.width}x${videoQosData.decode.height}`,
+            height: videoQosData.decode.height,
+            fullResolution: `${videoQosData.decode.width}x${videoQosData.decode.height}`,
             fps: videoQosData.decode.fps,
             sampleRate: videoQosData.decode.sample_rate,
             rtt: videoQosData.decode.rtt,
@@ -147,7 +173,8 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
         setAudioEncodeHistory((prev) => {
           const newPoint: QoSMetric = {
             timestamp,
-            resolution: "",
+            height: 0,
+            fullResolution: "",
             fps: 0,
             sampleRate: audioQosData.encode.sample_rate,
             rtt: audioQosData.encode.rtt,
@@ -162,7 +189,8 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
         setAudioDecodeHistory((prev) => {
           const newPoint: QoSMetric = {
             timestamp,
-            resolution: "",
+            height: 0,
+            fullResolution: "",
             fps: 0,
             sampleRate: audioQosData.decode.sample_rate,
             rtt: audioQosData.decode.rtt,
@@ -180,7 +208,8 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
         setSharingEncodeHistory((prev) => {
           const newPoint: QoSMetric = {
             timestamp,
-            resolution: `${sharingQosData.encode.width}x${sharingQosData.encode.height}`,
+            height: sharingQosData.encode.height,
+            fullResolution: `${sharingQosData.encode.width}x${sharingQosData.encode.height}`,
             fps: sharingQosData.encode.fps,
             sampleRate: sharingQosData.encode.sample_rate,
             rtt: sharingQosData.encode.rtt,
@@ -195,7 +224,8 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
         setSharingDecodeHistory((prev) => {
           const newPoint: QoSMetric = {
             timestamp,
-            resolution: `${sharingQosData.decode.width}x${sharingQosData.decode.height}`,
+            height: sharingQosData.decode.height,
+            fullResolution: `${sharingQosData.decode.width}x${sharingQosData.decode.height}`,
             fps: sharingQosData.decode.fps,
             sampleRate: sharingQosData.decode.sample_rate,
             rtt: sharingQosData.decode.rtt,
@@ -288,65 +318,138 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
     );
   };
 
+  const toggleMetric = (metricKey: string) => {
+    const newSelected = new Set(selectedMetrics);
+    if (selectedMetrics.has(metricKey)) {
+      newSelected.delete(metricKey);
+    } else {
+      newSelected.add(metricKey);
+    }
+    setSelectedMetrics(newSelected);
+    localStorage.setItem("qosMetricPreferences", JSON.stringify(Array.from(newSelected)));
+  };
+
+  const renderMetricControls = () => {
+    return (
+      <div className="flex flex-col space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-medium">Metrics</h3>
+          <div className="flex space-x-2">
+            <button
+              className="px-3 py-1.5 text-xs rounded-full bg-gray-800 text-gray-400 hover:bg-gray-700 transition-colors"
+              onClick={() => {
+                setSelectedMetrics(new Set());
+                localStorage.setItem("qosMetricPreferences", JSON.stringify([]));
+              }}
+            >
+              Clear All
+            </button>
+            <button
+              className="px-3 py-1.5 text-xs rounded-full bg-gray-800 text-gray-400 hover:bg-gray-700 transition-colors"
+              onClick={() => {
+                const defaultMetrics = new Set(
+                  METRIC_OPTIONS.filter((metric) => metric.defaultVisible).map((metric) => metric.key),
+                );
+                setSelectedMetrics(defaultMetrics);
+                localStorage.setItem("qosMetricPreferences", JSON.stringify(Array.from(defaultMetrics)));
+              }}
+            >
+              Reset to Default
+            </button>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {METRIC_OPTIONS.map((metric) => (
+            <button
+              key={metric.key}
+              className={`px-3 py-1.5 text-xs rounded-full transition-all duration-200 ${
+                selectedMetrics.has(metric.key)
+                  ? `bg-opacity-20 bg-${metric.color} text-${metric.color} ring-1 ring-${metric.color}`
+                  : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+              }`}
+              onClick={() => toggleMetric(metric.key)}
+            >
+              {metric.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const renderQoSChart = (data: QoSMetric[], title: string, showResolution = false) => {
     return (
-      <div className="bg-gray-900 rounded-lg p-4 mb-6">
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-gray-900/50 backdrop-blur-sm rounded-2xl p-6 mb-6 shadow-lg">
+        <div className="flex flex-col space-y-4 mb-6">
           <h3 className="text-lg font-medium">{title}</h3>
-          <div className="flex flex-wrap gap-2">
-            {METRIC_OPTIONS.map((metric) => (
-              <button
-                key={metric.key}
-                className={`px-2 py-1 text-xs rounded-md transition-colors ${
-                  selectedMetrics.has(metric.key)
-                    ? "bg-gray-600 text-white"
-                    : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                }`}
-                onClick={() => {
-                  const newSelected = new Set(selectedMetrics);
-                  if (selectedMetrics.has(metric.key)) {
-                    newSelected.delete(metric.key);
-                  } else {
-                    newSelected.add(metric.key);
-                  }
-                  setSelectedMetrics(newSelected);
-                }}
-              >
-                {metric.label}
-              </button>
-            ))}
-          </div>
+          {renderMetricControls()}
         </div>
 
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#333" opacity={0.5} />
             <XAxis
               dataKey="timestamp"
               tickFormatter={(timestamp) => new Date(timestamp).toLocaleTimeString()}
               stroke="#666"
+              fontSize={12}
             />
-            <YAxis stroke="#666" />
+            <YAxis stroke="#666" fontSize={12} />
             <Tooltip
-              contentStyle={{ backgroundColor: "#1a1a1a", border: "1px solid #333" }}
+              contentStyle={{
+                backgroundColor: "rgba(0,0,0,0.8)",
+                border: "none",
+                borderRadius: "12px",
+                backdropFilter: "blur(12px)",
+                boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+                padding: "12px",
+              }}
               labelFormatter={(timestamp) => new Date(Number(timestamp)).toLocaleTimeString()}
-              formatter={(value: number, name: string) => {
+              formatter={(value: number | string, name: string, props) => {
                 const metric = METRIC_OPTIONS.find((m) => m.label === name);
-                return [metric?.format ? metric.format(value) : value, name];
+                if (name === "Resolution") {
+                  return [props.payload.fullResolution || value, name];
+                }
+                return [metric?.format ? metric.format(value as number) : value, name];
               }}
             />
-            <Legend />
+            <Legend
+              verticalAlign="top"
+              height={36}
+              wrapperStyle={{
+                paddingBottom: "20px",
+                fontSize: "12px",
+              }}
+            />
             {Array.from(selectedMetrics).map((metricKey) => {
               const metric = METRIC_OPTIONS.find((m) => m.key === metricKey);
               if (!metric) return null;
+
+              if (metric.key === "height") {
+                return (
+                  <Line
+                    key={metric.key}
+                    type="stepAfter"
+                    dataKey={metric.key}
+                    stroke={metric.color}
+                    strokeWidth={2}
+                    name={metric.label}
+                    dot={true}
+                    activeDot={{ r: 6 }}
+                  />
+                );
+              }
+
               return (
                 <Line
                   key={metric.key}
                   type="monotone"
                   dataKey={metric.key}
                   stroke={metric.color}
+                  strokeWidth={2}
                   name={metric.label}
                   dot={false}
+                  activeDot={{ r: 4 }}
                 />
               );
             })}
@@ -358,18 +461,18 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
 
   const renderMainTabs = () => {
     return (
-      <div className="flex space-x-2 mb-6">
+      <div className="flex space-x-2 mb-6 bg-gray-900/50 p-1 rounded-xl backdrop-blur-sm">
         <button
-          className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors ${
-            mainTab === "av" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+          className={`flex-1 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+            mainTab === "av" ? "bg-gray-800 text-white shadow-lg" : "text-gray-400 hover:text-white"
           }`}
           onClick={() => setMainTab("av")}
         >
           Audio & Video
         </button>
         <button
-          className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors ${
-            mainTab === "all" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+          className={`flex-1 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+            mainTab === "all" ? "bg-gray-800 text-white shadow-lg" : "text-gray-400 hover:text-white"
           }`}
           onClick={() => setMainTab("all")}
         >
@@ -381,11 +484,11 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
 
   const renderSubTabs = () => {
     return (
-      <div className="flex space-x-2 mb-4">
+      <div className="flex space-x-2 mb-6 bg-gray-900/50 p-1 rounded-xl backdrop-blur-sm">
         {videoQosData && (
           <button
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              subTab === "video" ? "bg-gray-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+              subTab === "video" ? "bg-gray-800 text-white shadow-lg" : "text-gray-400 hover:text-white"
             }`}
             onClick={() => setSubTab("video")}
           >
@@ -394,8 +497,8 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
         )}
         {audioQosData && (
           <button
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              subTab === "audio" ? "bg-gray-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+              subTab === "audio" ? "bg-gray-800 text-white shadow-lg" : "text-gray-400 hover:text-white"
             }`}
             onClick={() => setSubTab("audio")}
           >
@@ -404,8 +507,8 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
         )}
         {sharingQosData && (
           <button
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              subTab === "sharing" ? "bg-gray-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+              subTab === "sharing" ? "bg-gray-800 text-white shadow-lg" : "text-gray-400 hover:text-white"
             }`}
             onClick={() => setSubTab("sharing")}
           >
@@ -468,11 +571,13 @@ export const QoSDisplay: React.FC<QoSDisplayProps> = ({
   };
 
   return (
-    <div className="rounded-lg shadow-md p-6 w-full md:w-3/4 mx-auto bg-black text-white max-h-[90vh] overflow-y-auto">
-      <div className="sticky top-0 bg-black z-10 pb-4 mb-4 border-b border-gray-800">
+    <div className="rounded-2xl shadow-xl p-6 w-full md:w-3/4 mx-auto bg-black/90 backdrop-blur-xl text-white max-h-[90vh] overflow-y-auto">
+      <div className="sticky top-0 bg-black/90 backdrop-blur-xl z-10 pb-4 mb-4 border-b border-gray-800">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">QoS Statistics</h2>
-          <span className="text-xs text-gray-400">{new Date().toLocaleString()}</span>
+          <span className="text-xs text-gray-400 bg-gray-900/50 px-3 py-1.5 rounded-full">
+            {new Date().toLocaleString()}
+          </span>
         </div>
       </div>
 
