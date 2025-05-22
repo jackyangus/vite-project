@@ -16,7 +16,7 @@ find src -type d | sed -e "s/[^-][^\/]*\//  │   /g" -e "s/│\([^ ]\)/├─�
 
 # Update dependency
 
-`npx npm-check -u`
+` `
 
 # [Https](https://github.com/FiloSottile/mkcert)
 
