@@ -61,3 +61,29 @@ find src -type d | sed -e "s/[^-][^\/]*\//  │   /g" -e "s/│\([^ ]\)/├─�
 ```
  npx eslint .
 ```
+
+```
+feat: Implement Phase 1 of MVP Backend
+
+This commit includes the initial backend setup for the translation platform MVP:
+
+- User Service:
+  - Email/password registration and login.
+  - Google OAuth2 registration and login.
+  - JWT generation and validation.
+  - Password hashing with BCrypt.
+- Translation Service:
+  - API for creating translation requests (direct text input).
+  - Asynchronous processing of translations via a placeholder Machine Translation client.
+  - API for retrieving user's translation history.
+- Database:
+  - MySQL schema for users, OAuth identities, and translation requests.
+- API Gateway:
+  - JWT authentication and authorization configured within the Spring Boot application.
+  - CORS configured for frontend integration.
+- Containerization:
+  - Dockerfile for the Spring Boot application.
+  - docker-compose.yml for local development with MySQL.
+
+All services are currently part of a single Spring Boot application.
+```

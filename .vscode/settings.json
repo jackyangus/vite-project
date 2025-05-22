@@ -4,23 +4,13 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
   "prettier.requireConfig": true,
   "prettier.useEditorConfig": false,
   "typescript.validate.enable": true,
   "javascript.validate.enable": false,
   "css.validate": false,
   "scss.validate": false,
-  "cSpell.words": [
-    "lucide",
-    "notistack",
-    "Subsession",
-    "Subsessions",
-    "tailwindcss"
-  ]
+  "cSpell.words": ["lucide", "notistack", "Subsession", "Subsessions", "tailwindcss"],
+  "java.compile.nullAnalysis.mode": "automatic"
 }
