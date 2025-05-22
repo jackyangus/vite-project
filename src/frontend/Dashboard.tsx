@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Globe,
   FileText,
@@ -35,6 +35,253 @@ import {
   ExternalLink,
 } from "lucide-react";
 
+// Define TranslatorWorkbench as a separate component
+const TranslatorWorkbench = () => {
+  // Mock data for segments
+  const segments = [
+    {
+      id: "seg1",
+      source: "Hello, world!",
+      target: "",
+      status: "untranslated",
+      screenshotUrl: "https://via.placeholder.com/400x300.png?text=Screenshot+Seg1",
+    },
+    {
+      id: "seg2",
+      source: "This is an example sentence.",
+      target: "",
+      status: "untranslated",
+      screenshotUrl: "https://via.placeholder.com/400x300.png?text=Screenshot+Seg2",
+    },
+    {
+      id: "seg3",
+      source: "Translate this text carefully.",
+      target: "请仔细翻译此文本。",
+      status: "translated",
+      screenshotUrl: "https://via.placeholder.com/400x300.png?text=Screenshot+Seg3",
+    },
+    {
+      id: "seg4",
+      source: "Another segment to work on.",
+      target: "",
+      status: "untranslated",
+      screenshotUrl: "https://via.placeholder.com/400x300.png?text=Screenshot+Seg4",
+    },
+    {
+      id: "seg5",
+      source: "The quick brown fox jumps over the lazy dog.",
+      target: "",
+      status: "draft",
+      screenshotUrl: "https://via.placeholder.com/400x300.png?text=Screenshot+Seg5",
+    },
+  ];
+
+  const [selectedSegment, setSelectedSegment] = useState(segments[0]);
+  const [mtSuggestion, setMtSuggestion] = useState("Bonjour le monde!");
+  const [tmResults, setTmResults] = useState([
+    { score: 95, source: "Hello, world!", target: "Hallo Welt!" },
+    { score: 80, source: "Hello, new world!", target: "Hallo neue Welt!" },
+  ]);
+
+  const auxWindowRef = useRef(null);
+
+  useEffect(() => {
+    // When selectedSegment changes, send a message to the aux window if it's open
+    if (auxWindowRef.current && !auxWindowRef.current.closed) {
+      auxWindowRef.current.postMessage({ type: "SEGMENT_UPDATE", data: selectedSegment }, "*");
+    }
+
+    // Listener for messages from the aux window
+    const handleAuxMessages = (event) => {
+      // IMPORTANT: Validate event.origin in production!
+      if (event.source === auxWindowRef.current && event.data && event.data.type === "AUX_WINDOW_READY") {
+        // Aux window is ready, send current segment data
+        if (auxWindowRef.current && !auxWindowRef.current.closed) {
+          auxWindowRef.current.postMessage({ type: "SEGMENT_UPDATE", data: selectedSegment }, "*");
+        }
+      }
+    };
+
+    window.addEventListener("message", handleAuxMessages);
+
+    return () => {
+      window.removeEventListener("message", handleAuxMessages);
+    };
+  }, [selectedSegment]); // selectedSegment is a dependency to re-send data if it changes
+
+  const openAuxWindow = () => {
+    if (auxWindowRef.current && !auxWindowRef.current.closed) {
+      auxWindowRef.current.focus();
+      return;
+    }
+    const newAuxWindow = window.open(
+      `/aux-viewer`,
+      "auxiliaryViewer",
+      "width=600,height=400,resizable=yes,scrollbars=yes,status=no,toolbar=no,menubar=no,location=no",
+    );
+    if (newAuxWindow) {
+      auxWindowRef.current = newAuxWindow;
+      // Send initial data after a short delay to ensure the new window's listener is ready
+      setTimeout(() => {
+        if (auxWindowRef.current && !auxWindowRef.current.closed) {
+          auxWindowRef.current.postMessage({ type: "SEGMENT_UPDATE", data: selectedSegment }, "*");
+        }
+      }, 500);
+      newAuxWindow.focus();
+    } else {
+      alert("请允许弹出窗口。");
+    }
+  };
+
+  return (
+    <div className="p-8 h-full flex flex-col">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">翻译工作台: Project Alpha</h1>
+        <p className="text-gray-600 font-medium">任务: Document_Main_EN_to_FR.docx</p>
+      </div>
+
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
+        {/* Left Column: Segments List */}
+        <div className="lg:col-span-3 bg-white rounded-3xl border border-gray-100 p-6 flex flex-col">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">待翻译句段</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="搜索句段..."
+                className="pl-9 pr-3 py-2 w-full bg-gray-50 border-0 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm"
+              />
+            </div>
+            <button className="p-2 hover:bg-gray-100 rounded-xl">
+              <Filter className="w-4 h-4 text-gray-600" />
+            </button>
+          </div>
+          <div className="flex-1 space-y-2 overflow-y-auto pr-1">
+            {segments.map((segment) => (
+              <div
+                key={segment.id}
+                onClick={() => setSelectedSegment(segment)} // This will trigger the useEffect to send message
+                className={`p-3 rounded-xl cursor-pointer transition-all duration-150 ${selectedSegment.id === segment.id ? "bg-blue-500 text-white shadow-lg" : "hover:bg-gray-100"}`}
+              >
+                <p
+                  className={`text-sm truncate ${selectedSegment.id === segment.id ? "font-semibold" : "text-gray-700"}`}
+                >
+                  {segment.source}
+                </p>
+                <p className={`text-xs mt-1 ${selectedSegment.id === segment.id ? "text-blue-100" : "text-gray-500"}`}>
+                  {segment.status === "translated" ? "已翻译" : segment.status === "draft" ? "草稿" : "未翻译"}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Middle Column: Editor */}
+        <div className="lg:col-span-6 bg-white rounded-3xl border border-gray-100 p-6 flex flex-col">
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">源文本 (ID: {selectedSegment.id})</h2>
+            <div className="mt-2 p-4 bg-gray-50 rounded-xl min-h-[100px] text-gray-800 text-sm">
+              {selectedSegment.source}
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-semibold text-gray-800">译文</h2>
+              {mtSuggestion && (
+                <button className="text-xs bg-purple-100 text-purple-700 hover:bg-purple-200 px-2 py-1 rounded-md font-medium transition-colors">
+                  使用机器翻译: "{mtSuggestion.substring(0, 20)}..."
+                </button>
+              )}
+            </div>
+            <textarea
+              rows={6}
+              className="w-full p-4 bg-gray-50 border-0 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm text-gray-800 resize-none"
+              placeholder="在此输入译文..."
+              defaultValue={selectedSegment.target}
+            />
+          </div>
+
+          <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
+            <div className="flex items-center gap-2">
+              <button className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl border border-gray-200 transition-colors">
+                复制原文
+              </button>
+              <button className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl border border-gray-200 transition-colors">
+                清除译文
+              </button>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-500">状态: {selectedSegment.status}</span>
+              <button className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-xl font-semibold text-sm transition-colors shadow-sm">
+                <CheckCircle className="w-4 h-4 inline mr-1.5" />
+                确认并下一个
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Context & TM */}
+        <div className="lg:col-span-3 bg-white rounded-3xl border border-gray-100 p-6 flex flex-col space-y-6">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-gray-800">辅助信息</h2>
+              <button
+                onClick={openAuxWindow}
+                title="在新窗口中打开辅助信息"
+                className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <ExternalLink className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
+            <div className="bg-gray-100 rounded-xl aspect-video flex items-center justify-center overflow-hidden">
+              {/* Main window still shows the screenshot, aux window will too */}
+              <img
+                src={selectedSegment.screenshotUrl}
+                alt="Product Screenshot"
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-800 mb-3">翻译记忆库 (TM)</h2>
+            {tmResults.length > 0 ? (
+              <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                {tmResults.map((tm, index) => (
+                  <div
+                    key={index}
+                    className="p-3 bg-gray-50 rounded-xl border border-gray-200 hover:border-blue-300 transition-colors cursor-pointer"
+                  >
+                    <div className="flex justify-between items-center mb-1">
+                      <p className="text-xs font-semibold text-blue-600">匹配度: {tm.score}%</p>
+                      <button className="text-xs text-blue-500 hover:text-blue-700 font-medium">使用</button>
+                    </div>
+                    <p className="text-xs text-gray-700 mb-1">
+                      <strong>源:</strong> {tm.source}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      <strong>译:</strong> {tm.target}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 italic">未找到相关翻译记忆。</p>
+            )}
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-800 mb-3">术语库</h2>
+            <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 text-center">
+              <p className="text-sm text-gray-400 italic">术语库功能待添加</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -43,6 +290,7 @@ const Dashboard = () => {
     { id: "dashboard", label: "概览", icon: BarChart3 },
     { id: "projects", label: "项目", icon: FileText },
     { id: "translators", label: "译者", icon: Users },
+    { id: "workbench", label: "工作台", icon: Edit },
     { id: "pricing", label: "计费", icon: DollarSign },
     { id: "api", label: "API", icon: Globe },
     { id: "settings", label: "设置", icon: Settings },
@@ -579,7 +827,7 @@ const Dashboard = () => {
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-3">项目描述</label>
                 <textarea
-                  rows="4"
+                  rows={4}
                   className="w-full px-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-200 text-sm font-medium resize-none"
                   placeholder="详细描述翻译需求、目标用户、使用场景等信息..."
                 ></textarea>
@@ -610,18 +858,205 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
+
+          {/* 文件上传 */}
+          <div className="bg-white rounded-3xl p-8 border border-gray-100">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">上传翻译文件</h2>
+            <div className="space-y-6">
+              <div className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-blue-500 transition-colors duration-200 cursor-pointer">
+                <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-700 font-semibold mb-2">拖拽文件到此处，或点击上传</p>
+                <p className="text-xs text-gray-500">支持的文件格式: JSON, XML, TXT, Excel (XLSX, CSV)</p>
+                <input type="file" className="hidden" multiple />
+              </div>
+              {/* 文件列表预览 (示例) */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <FileJson className="w-6 h-6 text-blue-500" />
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800">product_data.json</p>
+                      <p className="text-xs text-gray-500">2.5 MB</p>
+                    </div>
+                  </div>
+                  <button className="p-2 hover:bg-gray-100 rounded-xl">
+                    <Trash2 className="w-4 h-4 text-red-500" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 翻译设置 */}
+          <div className="bg-white rounded-3xl p-8 border border-gray-100">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">翻译设置</h2>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">翻译类型</label>
+                <select className="w-full px-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-medium">
+                  <option>机器翻译 (AI)</option>
+                  <option>人工翻译 (专业译者)</option>
+                  <option>混合翻译 (AI + 人工校对)</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">截止日期 (可选)</label>
+                  <input
+                    type="date"
+                    className="w-full px-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-200 text-sm font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">优先级</label>
+                  <select className="w-full px-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-medium">
+                    <option>普通</option>
+                    <option>高</option>
+                    <option>紧急</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">备注 (可选)</label>
+                <textarea
+                  rows={3}
+                  className="w-full px-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-200 text-sm font-medium resize-none"
+                  placeholder="例如：术语表、风格指南、特殊要求等..."
+                ></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 侧边栏 - 项目摘要和操作 */}
+        <div className="lg:col-span-1 space-y-8">
+          <div className="bg-white rounded-3xl p-8 border border-gray-100 sticky top-24">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">项目摘要</h2>
+            <div className="space-y-4 mb-8">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">项目名称:</span>
+                <span className="font-semibold text-gray-800">待填写</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">源语言:</span>
+                <span className="font-semibold text-gray-800">待选择</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">目标语言:</span>
+                <span className="font-semibold text-gray-800">待选择</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">文件数量:</span>
+                <span className="font-semibold text-gray-800">0</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">翻译类型:</span>
+                <span className="font-semibold text-gray-800">待选择</span>
+              </div>
+            </div>
+            <div className="border-t border-gray-100 pt-6 space-y-3">
+              <div className="flex justify-between font-bold text-lg">
+                <span className="text-gray-700">预计费用:</span>
+                <span className="text-blue-600">¥0.00</span>
+              </div>
+              <p className="text-xs text-gray-500">费用将根据文件字数、语言对和翻译类型计算。</p>
+            </div>
+            <div className="mt-8 space-y-3">
+              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-2xl font-semibold text-sm transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 flex items-center justify-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                提交项目
+              </button>
+              <button className="w-full text-gray-600 hover:text-gray-800 font-medium text-sm transition-colors duration-200 py-3">
+                保存为草稿
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 
+  // Placeholder for Translators page
+  const renderTranslators = () => (
+    <div className="p-8">
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">译者管理</h1>
+      <p className="text-gray-600 font-medium">管理平台上的译者资源 (占位内容)</p>
+      <div className="mt-8 bg-white rounded-3xl p-8 border border-gray-100 text-center">
+        <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+        <p className="text-gray-500">译者管理功能正在开发中。</p>
+      </div>
+    </div>
+  );
+
+  // Placeholder for Pricing page
+  const renderPricing = () => (
+    <div className="p-8">
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">计费系统</h1>
+      <p className="text-gray-600 font-medium">查看和管理您的计费信息 (占位内容)</p>
+      <div className="mt-8 bg-white rounded-3xl p-8 border border-gray-100 text-center">
+        <DollarSign className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+        <p className="text-gray-500">计费系统功能正在开发中。</p>
+      </div>
+    </div>
+  );
+
+  // Placeholder for API page
+  const renderApi = () => (
+    <div className="p-8">
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">API 接口</h1>
+      <p className="text-gray-600 font-medium">集成翻译服务到您的应用程序 (占位内容)</p>
+      <div className="mt-8 bg-white rounded-3xl p-8 border border-gray-100 text-center">
+        <Globe className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+        <p className="text-gray-500">API 接口管理功能正在开发中。</p>
+      </div>
+    </div>
+  );
+
+  // Placeholder for Settings page
+  const renderSettings = () => (
+    <div className="p-8">
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">系统设置</h1>
+      <p className="text-gray-600 font-medium">配置您的账户和平台参数 (占位内容)</p>
+      <div className="mt-8 bg-white rounded-3xl p-8 border border-gray-100 text-center">
+        <Settings className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+        <p className="text-gray-500">系统设置功能正在开发中。</p>
+      </div>
+    </div>
+  );
+
+  // Placeholder for Translator Workbench - now just returns the component
+  const renderTranslatorWorkbench = () => <TranslatorWorkbench />;
+
+  const renderPage = () => {
+    switch (currentPage) {
+      case "dashboard":
+        return renderDashboard();
+      case "projects":
+        return renderProjects();
+      case "create-project":
+        return renderCreateProject();
+      case "translators":
+        return renderTranslators();
+      case "workbench":
+        return renderTranslatorWorkbench();
+      case "pricing":
+        return renderPricing();
+      case "api":
+        return renderApi();
+      case "settings":
+        return renderSettings();
+      default:
+        return renderDashboard();
+    }
+  };
+
   return (
-    <div>
+    <div className="flex bg-gray-50 min-h-screen">
       {renderSidebar()}
-      {renderHeader()}
-      {renderDashboard()}
-      {renderProjects()}
-      {renderCreateProject()}
+      <div className="flex-1 flex flex-col">
+        {renderHeader()}
+        <main className="flex-1 overflow-y-auto">{renderPage()}</main>
+      </div>
     </div>
   );
 };
