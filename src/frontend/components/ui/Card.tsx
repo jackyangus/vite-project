@@ -1,4 +1,5 @@
 import React from "react";
+import { useTheme } from "../../contexts/ThemeContext"; // Path to ThemeContext
 
 // Card Component
 const Card = ({
@@ -12,16 +13,19 @@ const Card = ({
   interactive?: boolean;
   [x: string]: any;
 }) => {
-  const interactiveClasses = interactive ? "hover:shadow-xl hover:-translate-y-1 cursor-pointer" : "";
+  const { theme } = useTheme();
+  const cardStyles = theme.components.card;
+
+  const interactiveClasses = interactive ? cardStyles.interactiveHover : "";
 
   return (
     <div
-      className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 ${interactiveClasses}`}
+      className={`rounded-2xl overflow-hidden transition-all duration-300 ${cardStyles.wrapper} ${interactiveClasses}`}
       {...props}
     >
       {title && (
-        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <div className={`px-6 py-4 ${cardStyles.titleSection}`}>
+          <h3 className={`text-lg font-semibold ${cardStyles.titleText}`}>{title}</h3>
         </div>
       )}
       <div className="p-6">{children}</div>

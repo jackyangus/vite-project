@@ -1,5 +1,6 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
+import { useTheme } from "../../contexts/ThemeContext"; // Path to ThemeContext
 
 // Dropdown Component
 const Dropdown = ({
@@ -15,12 +16,15 @@ const Dropdown = ({
   onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
   [x: string]: any;
 }) => {
+  const { theme } = useTheme();
+  const dropdownStyles = theme.components.dropdown;
+
   return (
     <div className="space-y-1">
-      {label && <label className="block text-sm font-medium text-gray-700">{label}</label>}
+      {label && <label className={`block text-sm font-medium ${dropdownStyles.label}`}>{label}</label>}
       <div className="relative">
         <select
-          className="block w-full rounded-xl border-0 py-3 px-4 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 transition-all duration-200 appearance-none bg-white"
+          className={`block w-full rounded-xl border-0 py-3 px-4 pr-10 shadow-sm ring-1 ring-inset transition-all duration-200 appearance-none ${dropdownStyles.select} ${dropdownStyles.selectFocus}`}
           value={value}
           onChange={onChange}
           {...props}
@@ -32,7 +36,7 @@ const Dropdown = ({
           ))}
         </select>
         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3">
-          <ChevronDown className="h-5 w-5 text-gray-400" />
+          <ChevronDown className={`h-5 w-5 ${dropdownStyles.icon}`} />
         </div>
       </div>
     </div>

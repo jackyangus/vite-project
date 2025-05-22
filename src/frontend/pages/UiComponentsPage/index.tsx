@@ -33,11 +33,6 @@ import {
   Archive,
   UploadCloud,
   File,
-  ArrowUpDown,
-  Edit,
-  Trash,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import Alert from "@/frontend/components/ui/Alert";
 import Card from "@/frontend/components/ui/Card";
@@ -46,12 +41,12 @@ import TextInput from "@/frontend/components/ui/TextInput";
 import Dropdown from "@/frontend/components/ui/Dropdown";
 import Modal from "@/frontend/components/ui/Modal";
 import Tag from "@/frontend/components/ui/Tag";
+import DataTable from "@/frontend/components/ui/DataTable";
 
 const AppleUIComponents = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [modalOpen, setModalOpen] = useState(false);
   const [alertVisible, setAlertVisible] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
   const [selectedFiles, setSelectedFiles] = useState([]);
 
   const fileUploadData = [
@@ -63,6 +58,9 @@ const AppleUIComponents = () => {
     { id: 1, name: "John Doe", email: "john@example.com", role: "Admin", status: "Active" },
     { id: 2, name: "Jane Smith", email: "jane@example.com", role: "User", status: "Active" },
     { id: 3, name: "Bob Johnson", email: "bob@example.com", role: "User", status: "Inactive" },
+    { id: 4, name: "Alice Brown", email: "alice@example.com", role: "Editor", status: "Active" },
+    { id: 5, name: "Charlie Green", email: "charlie@example.com", role: "Viewer", status: "Inactive" },
+    { id: 6, name: "David White", email: "david@example.com", role: "Admin", status: "Active" },
   ];
 
   return (
@@ -268,82 +266,7 @@ const AppleUIComponents = () => {
         {activeTab === "data" && (
           <div className="space-y-6">
             {/* Data Table */}
-            <Card title="Data Table">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Role
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {tableData.map((row) => (
-                      <tr key={row.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{row.name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.email}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.role}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <Tag variant={row.status === "Active" ? "success" : "error"}>{row.status}</Tag>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                          <button className="text-blue-600 hover:text-blue-900">
-                            <Edit className="h-4 w-4" />
-                          </button>
-                          <button className="text-red-600 hover:text-red-900">
-                            <Trash className="h-4 w-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination */}
-              <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 mt-4">
-                <div className="flex flex-1 justify-between sm:hidden">
-                  <Button variant="outline" size="sm" icon={ChevronLeft}>
-                    Previous
-                  </Button>
-                  <Button variant="outline" size="sm" icon={ChevronRight}>
-                    Next
-                  </Button>
-                </div>
-                <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Showing <span className="font-medium">1</span> to <span className="font-medium">3</span> of{" "}
-                      <span className="font-medium">3</span> results
-                    </p>
-                  </div>
-                  <div className="flex space-x-1">
-                    <button className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    <button className="px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-lg">
-                      1
-                    </button>
-                    <button className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </Card>
+            <DataTable title="User Management" data={tableData} />
           </div>
         )}
 
