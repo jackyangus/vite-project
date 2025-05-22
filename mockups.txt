@@ -1,0 +1,190 @@
+## Textual Mockups
+
+This document provides textual mockups for key pages of the application, integrating wireframe structures with defined UI components.
+
+---
+
+### 1. Homepage
+
+*   **Page Title:** Welcome to [Application Name] - Seamless Translation Solutions
+*   **Overall Structure:** Header, Main Content (Hero, Features, Testimonials), Footer.
+*   **Header Components:**
+    *   Logo: Text "[AppLogo]" or `<img>` placeholder.
+    *   Navigation Links:
+        *   `Button` (Link style, or subtle Outline): "Features"
+        *   `Button` (Link style, or subtle Outline): "Pricing"
+        *   `Button` (Link style, or subtle Outline): "Docs"
+        *   `Button` (Secondary): "Login" with `LogIn` icon.
+        *   `Button` (Primary): "Sign Up" with `UserPlus` icon (alternative to `PlusCircle` for user creation).
+*   **Main Content Components:**
+    *   **Hero Section:**
+        *   Headline: Large text (e.g., `text-4xl font-bold`) "Translate Your World, Effortlessly."
+        *   Sub-headline: Supporting text (e.g., `text-xl text-gray-600`) "Our platform offers fast, accurate, and scalable translation services for your documents, websites, and applications."
+        *   `Button` (Primary, Large size): "Get Started Free" with `ArrowRight` icon.
+    *   **Features Section:** (Arranged in a grid of `Card` components)
+        *   Each `Card` (`p-6` padding, `hover:shadow-xl`):
+            *   Icon: Large `lucide-react` icon at the top or side (e.g., `Globe` for "Global Reach", `Zap` for "Fast Translation", `Users` for "Collaboration").
+            *   Title: `text-lg font-semibold` (e.g., "AI-Powered Accuracy").
+            *   Description: Short `text-gray-600` paragraph.
+    *   **Testimonials Section:**
+        *   Section Title: "Trusted by Developers Worldwide" (`text-2xl font-semibold text-center`).
+        *   Uses a series of `Card` components (or a carousel structure housing these cards):
+            *   Each Testimonial `Card` (`p-4`):
+                *   User Photo (placeholder).
+                *   Quote: `text-gray-700 italic`.
+                *   User Name: `font-semibold text-gray-800`.
+                *   Company: `text-sm text-gray-500`.
+*   **Footer Components:**
+    *   Copyright Text: "© [Year] [Application Name]. All rights reserved." (`text-sm text-gray-500`).
+    *   Links (simple text links, `text-sm text-gray-500 hover:text-indigo-600`): "About Us", "Contact", "Privacy Policy", "Terms of Service".
+
+---
+
+### 2. Sign Up/Login Page
+
+*   **Page Title:** Sign Up or Login - [Application Name]
+*   **Overall Structure:** Centered content with Logo and a Form container. No distinct Header or Footer from the main app layout.
+*   **Header Components (within this page context):**
+    *   Logo: Text "[AppLogo]" or `<img>` placeholder, displayed above the form `Card`.
+*   **Main Content Components:**
+    *   Main Container: A `Card` component (`p-8 bg-white shadow-md rounded-lg w-full max-w-md`) to hold the forms.
+    *   `Tabs` Component: To switch between "Login" and "Sign Up".
+        *   Tab Item (Active/Inactive): "Login"
+        *   Tab Item (Active/Inactive): "Sign Up"
+    *   **Login Form (Displayed when Login Tab is active):**
+        *   Form Title: "Login to your Account" (`text-xl font-semibold mb-4`).
+        *   `TextInput` (Email): Label "Email Address", `Mail` icon.
+        *   `TextInput` (Password): Label "Password", `Lock` icon, type="password".
+        *   Checkbox: "Remember Me" (standard HTML checkbox styled with Tailwind).
+        *   Link: "Forgot Password?" (`text-sm text-indigo-600 hover:underline`).
+        *   `Button` (Primary, full width): "Login" with `LogIn` icon.
+    *   **Sign Up Form (Displayed when Sign Up Tab is active):**
+        *   Form Title: "Create an Account" (`text-xl font-semibold mb-4`).
+        *   `TextInput` (Full Name): Label "Full Name", `User` icon.
+        *   `TextInput` (Email): Label "Email Address", `Mail` icon.
+        *   `TextInput` (Password): Label "Password", `Lock` icon, type="password".
+        *   `TextInput` (Confirm Password): Label "Confirm Password", `Lock` icon, type="password".
+        *   `Button` (Primary, full width): "Sign Up" with `UserPlus` icon.
+    *   Link: (Below the active form)
+        *   If Login active: "Don't have an account? Sign Up" (`text-sm text-indigo-600 hover:underline`).
+        *   If Sign Up active: "Already have an account? Login" (`text-sm text-indigo-600 hover:underline`).
+    *   Social Login Options (Optional, below the form):
+        *   `Button` (Secondary, with icon): "Sign in with Google" (Google icon).
+        *   `Button` (Secondary, with icon): "Sign in with GitHub" (GitHub icon).
+
+---
+
+### 3. Dashboard (Developer/Company View)
+
+*   **Page Title:** Dashboard - [Application Name]
+*   **Overall Structure:** Header, Sidebar Navigation, Main Content Area.
+*   **Header Components:**
+    *   Logo: Text "[AppLogo]" or `<img>` placeholder.
+    *   User Profile/Account `Dropdown`:
+        *   Trigger: User avatar or name with `ChevronDown` icon.
+        *   Items: "My Account", "Settings", `Button` (Danger or Outline): "Logout" with `LogOut` icon.
+    *   Notifications: `Button` (Icon only, subtle style) with `Bell` icon. May show a `Tag` (Badge) with count for unread notifications.
+*   **Sidebar Navigation Components (`w-64 bg-gray-100 p-4`):**
+    *   Links styled as `Button` (full width, text-left, subtle/transparent background, hover effect):
+        *   "Overview" with `LayoutDashboard` icon.
+        *   "My Projects" with `Briefcase` icon.
+        *   "API Keys" with `Key` icon.
+        *   "Billing" with `CreditCard` icon.
+        *   "Account Settings" with `Settings` icon.
+        *   "Documentation" with `BookOpen` icon.
+*   **Main Content Components (Overview - Default View):**
+    *   Page Title: "Dashboard Overview" (`text-2xl font-semibold mb-6`).
+    *   Grid of `Card` components for summary statistics:
+        *   `Card` 1: "Total Projects" - Displays a number. Icon: `Briefcase`.
+        *   `Card` 2: "API Usage (This Month)" - Displays a number or simple graph. Icon: `BarChart3`.
+        *   `Card` 3: "Recent Activity" - List of recent events or link to activity log. Icon: `Activity`.
+    *   Quick Actions:
+        *   `Button` (Primary): "Create New Project" with `PlusCircle` icon.
+    *   **My Projects View (Alternative view in Main Content, if "My Projects" is clicked):**
+        *   Page Title: "My Projects" (`text-2xl font-semibold mb-6`).
+        *   `Button` (Primary): "Add New Project" with `PlusCircle` icon, placed above the table.
+        *   `Table` Component to list projects:
+            *   Columns:
+                *   "Project Name" (`Th`): `Td` with project name.
+                *   "Status" (`Th`): `Td` with `Tag` component (e.g., `Tag` (Success) "Active", `Tag` (Warning) "Pending").
+                *   "Last Updated" (`Th`): `Td` with date.
+                *   "Actions" (`Th`): `Td` containing:
+                    *   `Button` (Outline, small): "View" with `Eye` icon.
+                    *   `Button` (Outline, small): "Edit" with `Edit3` icon.
+                    *   `Button` (Danger, small): "Delete" with `Trash2` icon (possibly opens a confirmation `Modal`).
+        *   `Pagination` component if the project list is long.
+
+---
+
+### 4. Project Submission Page
+
+*   **Page Title:** Create New Project / Edit Project - [Application Name]
+*   **Overall Structure:** Follows Dashboard layout (Header, Sidebar, Main Content Area).
+*   **Header Components:** (Same as Dashboard)
+*   **Sidebar Navigation Components:** (Same as Dashboard, with "My Projects" or relevant item potentially highlighted)
+*   **Main Content Components:**
+    *   A `Card` component with `p-6` or `p-8` padding contains the main form.
+    *   Card Title: Dynamic - "Create New Project" or "Edit Project: [Project Name]" (`text-xl font-semibold mb-6`).
+    *   Form Fields:
+        *   `TextInput`: Label "Project Name". Icon: `Briefcase`.
+        *   Textarea (styled like `TextInput`): Label "Project Description".
+        *   `Dropdown` (Select): Label "Source Language". Icon: `Languages`. Options dynamically populated (e.g., English, Spanish, French).
+        *   `Dropdown` (Multi-select or Checkbox group): Label "Target Languages". Icon: `Languages`. Options dynamically populated.
+        *   `FileUploader` component:
+            *   Dropzone text: "Drag & drop localization files here, or click to select."
+            *   Icon: `UploadCloud`.
+            *   Instruction text: "Supports JSON, YAML, XLIFF, etc."
+            *   File List Preview will show uploaded files with `File` icon and `Trash2` icon to remove.
+        *   Optional Advanced Settings (could be in a collapsible section):
+            *   `TextInput`: Label "GitHub Repository URL (Optional)". Icon: `Github`.
+            *   `TextInput`: Label "API Callback URL (Optional)". Icon: `Webhook`.
+    *   Action Buttons (at the bottom of the form, typically right-aligned):
+        *   `Button` (Primary): "Create Project" (if new) or "Save Changes" (if editing) with `Save` or `PlusCircle` icon.
+        *   `Button` (Secondary or Outline): "Cancel".
+    *   If file upload is in progress, a progress bar element (not a specific component from the list, but can be constructed with `div`s) might be shown.
+    *   If there are form errors, `Alert` (Error) component might be displayed at the top of the form or individual `TextInput` components will show error states.
+
+---
+
+### 5. Translation Interface Page
+
+*   **Page Title:** Translate: [Project Name] - [Target Language] - [Application Name]
+*   **Overall Structure:** Header (specific to this interface), Main Area (Two-column layout: Source List, Translation Area), Footer/Action Bar.
+*   **Header Components (Interface-specific header `p-4 border-b`):**
+    *   Project Name: `text-lg font-semibold`.
+    *   `Dropdown` (Select) for Target Language:
+        *   Label (visually hidden or inline): "Translate to:"
+        *   Icon: `Languages`.
+        *   Options: List of target languages for the project.
+    *   Progress Bar: Visual bar showing % completion for the selected language. (Constructed with `div`s, e.g. `w-full bg-gray-200 rounded-full h-2.5` and an inner `bg-indigo-600` div for progress).
+    *   `Button` (Outline): "Back to Project Details" or "Exit Translator" with `ArrowLeft` icon.
+*   **Main Content Components:**
+    *   **Left Column (Source Text / Key List - `w-1/3 p-4 border-r`):**
+        *   `TextInput` (Search): Placeholder "Search keys or source text..." with `Search` icon.
+        *   Filter `Dropdown` (Select) or `Button` group:
+            *   Options: "All", "Untranslated", "Translated", "Needs Review". Icon: `Filter`.
+        *   Scrollable List of Items:
+            *   Each item (`p-2 hover:bg-gray-100 cursor-pointer rounded-md`):
+                *   Key Name: `text-sm font-medium text-gray-800`.
+                *   Source String Snippet: `text-xs text-gray-500 truncate`.
+                *   Status `Tag` (e.g., `Tag` (Primary) "Untranslated", `Tag` (Success) "Translated", `Tag` (Warning) "Needs Review").
+    *   **Right Column (Translation Area - `w-2/3 p-4`):**
+        *   `Card` or bordered section:
+            *   Section Title: "Source Text ([Source Language])" (`text-sm font-medium text-gray-500`).
+            *   Read-only display area for full source string: `p-3 bg-gray-50 rounded-md text-gray-700 min-h-[100px]`.
+            *   Context/Developer Notes (if available): `text-xs text-gray-500 mt-1 p-2 bg-yellow-50 rounded-md`. Icon: `Info`.
+            *   Section Title: "Translation ([Target Language])" (`text-sm font-medium text-gray-500 mt-4`).
+            *   Textarea (for translation input): `block w-full p-2 border border-gray-300 rounded-md min-h-[150px] focus:ring-indigo-500 focus:border-indigo-500`.
+            *   Optional: `Button` (Secondary, small): "Suggest with AI" or "Machine Translation" with `Sparkles` icon.
+            *   Character limit indicator (if applicable): `text-xs text-gray-500 mt-1`.
+*   **Footer/Action Bar Components (`p-4 border-t flex justify-between items-center`):**
+    *   Navigation Buttons:
+        *   `Button` (Outline): "Previous" with `ArrowLeft` icon.
+        *   `Button` (Outline): "Next" with `ArrowRight` icon.
+    *   Action Buttons:
+        *   `Button` (Secondary): "Mark as Reviewed" (if applicable) with `Check` icon.
+        *   `Button` (Primary): "Save Translation" with `Save` icon.
+        *   `Button` (Primary, slightly different style or text): "Save and Next Untranslated" with `Save` and `ArrowRight` icons.
+    *   If an error occurs during saving, an `Alert` (Error) component might be shown here or as a toast notification.
+
+---

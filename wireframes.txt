@@ -1,0 +1,206 @@
+## Wireframe Descriptions
+
+This document outlines the wireframes for key pages of the application.
+
+---
+
+### 1. Homepage
+
+*   **Overall Layout:**
+    *   Header: Contains Logo and Navigation links. `flex justify-between items-center p-4`
+    *   Hero Section: Prominent headline, sub-headline, and a Call to Action (CTA) button. `text-center py-16`
+    *   Features Section: Grid layout showcasing key features with icons and short descriptions. `grid grid-cols-1 md:grid-cols-3 gap-8 p-8`
+    *   Testimonials Section: Carousel or static display of user testimonials. `py-16`
+    *   Footer: Copyright information and links to About Us, Contact, Privacy Policy. `p-4 text-center`
+
+*   **Key Elements:**
+    *   Navigation: Home, Features, Pricing, Docs, Login, Sign Up.
+    *   CTA Button: "Get Started" or "Sign Up Free".
+    *   Featurettes: Icon, title, description.
+    *   Testimonial cards: User photo, quote, name.
+
+*   **User Flow:**
+    *   User learns about the product and its benefits.
+    *   User can navigate to Features, Pricing, or Docs to learn more.
+    *   User can click on Login or Sign Up to access the application.
+    *   Primary flow is towards "Sign Up".
+
+---
+
+### 2. Sign Up/Login Page
+
+*   **Overall Layout:**
+    *   Centered content layout. `flex flex-col items-center justify-center min-h-screen`
+    *   Logo displayed above the form. `mb-8`
+    *   Form container. `p-8 bg-white shadow-md rounded-lg w-full max-w-md`
+
+*   **Key Elements:**
+    *   Tabs or toggle: To switch between Sign Up and Login forms.
+    *   Sign Up Form:
+        *   Input fields: Full Name, Email, Password, Confirm Password.
+        *   Button: "Sign Up".
+        *   Link: "Already have an account? Login".
+    *   Login Form:
+        *   Input fields: Email, Password.
+        *   Checkbox: "Remember Me".
+        *   Link: "Forgot Password?".
+        *   Button: "Login".
+    *   Social Login options (e.g., Google, GitHub). `mt-4`
+
+*   **User Flow:**
+    *   New user fills Sign Up form and clicks "Sign Up" -> navigates to Dashboard (or email verification step).
+    *   Existing user fills Login form and clicks "Login" -> navigates to Dashboard.
+    *   User can click "Forgot Password?" to initiate password reset flow.
+    *   User can switch between Sign Up and Login views.
+
+---
+
+### 3. Dashboard (Developer/Company View)
+
+*   **Overall Layout:**
+    *   Header: Logo, User Profile/Account dropdown, Notifications. `flex justify-between items-center p-4 border-b`
+    *   Sidebar Navigation: Links to Projects, API Keys, Billing, Settings, Docs. `w-64 bg-gray-100 p-4`
+    *   Main Content Area: Displays relevant information based on sidebar selection. `flex-1 p-8`
+
+*   **Key Elements:**
+    *   Sidebar Links: Dashboard (Overview), My Projects, API Keys, Billing, Account Settings, Logout.
+    *   Overview (Default View):
+        *   Summary statistics: Total projects, API usage, recent activity. Displayed in cards or charts.
+        *   Quick Actions: "Create New Project" button.
+    *   My Projects View:
+        *   List/Table of projects: Project Name, Status, Last Updated, Action buttons (View, Edit, Delete).
+        *   "Add New Project" button.
+    *   User Profile Dropdown: My Account, Logout.
+
+*   **User Flow:**
+    *   User lands on Overview after login.
+    *   User can navigate to different sections using the sidebar.
+    *   User can create a new project from Overview or My Projects page.
+    *   User can manage existing projects (view details, edit settings).
+    *   User can access API key management, billing information, or account settings.
+
+---
+
+### 4. Project Submission Page
+
+*   **Overall Layout:**
+    *   Follows Dashboard layout (Header, Sidebar, Main Content Area).
+    *   Main Content Area: Form for submitting a new project or editing an existing one.
+
+*   **Key Elements:**
+    *   Form Title: "Create New Project" or "Edit Project: [Project Name]".
+    *   Input Fields:
+        *   Project Name (Text input).
+        *   Project Description (Textarea).
+        *   Source Language (Dropdown).
+        *   Target Languages (Multi-select dropdown or checkboxes).
+        *   File Upload (for localization files like JSON, YAML, XLIFF).
+        *   Optional: Integration settings (e.g., GitHub repo link, API callback URL).
+    *   Buttons: "Save Project" or "Create Project", "Cancel".
+    *   Progress indicator if file upload is large.
+
+*   **User Flow:**
+    *   User navigates here from "Create New Project" button on Dashboard or "Edit" button on project list.
+    *   User fills in project details and uploads necessary files.
+    *   User clicks "Create Project" or "Save Project".
+        *   On success: Navigates to the project's detail page or the Translation Interface.
+        *   On error: Displays validation messages.
+    *   User can click "Cancel" to return to the previous page (e.g., My Projects list).
+
+---
+
+### 5. Translation Interface Page
+
+*   **Overall Layout:**
+    *   Header: Project Name, Language Selector (target language), Progress Indicator. `p-4 border-b`
+    *   Main Area: Two-column layout.
+        *   Left Column (Source Text / Key List): Scrollable list of translation keys or source strings. `w-1/3 p-4 border-r`
+        *   Right Column (Translation Area): Displays the selected source string and an input field for its translation. `w-2/3 p-4`
+    *   Footer/Action Bar: Save buttons, navigation (Next/Previous string). `p-4 border-t flex justify-between`
+
+*   **Key Elements:**
+    *   Source String List:
+        *   Each item shows: Key name, Source string snippet, Status (e.g., Untranslated, Translated, Needs Review).
+        *   Filters: All, Untranslated, Translated, Needs Review.
+        *   Search bar for keys/source text.
+    *   Translation Area:
+        *   Read-only display of the full source string.
+        *   Textarea for entering/editing the translation.
+        *   Context/Developer notes (if available).
+        *   Machine Translation suggestions (optional button/area).
+        *   Character limit indicator (if applicable).
+    *   Action Buttons: "Save Translation", "Save and Next", "Mark as Reviewed".
+    *   Navigation: "Previous String", "Next String".
+    *   Language Selector: Dropdown to switch between target languages for the current project.
+    *   Progress Bar: Visual indication of translation completion for the current language.
+
+*   **User Flow:**
+    *   User selects a project and a target language to translate.
+    *   User selects a string/key from the left column.
+    *   The source string appears in the right column.
+    *   User types the translation in the textarea.
+    *   User saves the translation. They can choose to save and move to the next untranslated string.
+    *   User can filter strings by status or search for specific strings.
+    *   User can switch to translate another language for the same project.
+
+---
+
+### 6. Billing Page (Developer/Company View)
+
+*   **Overall Layout:**
+    *   Follows Dashboard layout (Header, Sidebar, Main Content Area).
+    *   Main Content Area: Sections for current plan, payment methods, billing history.
+
+*   **Key Elements:**
+    *   Current Plan Section:
+        *   Displays current subscription tier (e.g., Free, Pro, Enterprise).
+        *   Key features/limits of the current plan (e.g., words translated, projects, team members).
+        *   Button: "Change Plan" or "Upgrade Plan".
+    *   Payment Methods Section:
+        *   List of saved payment methods (e.g., Visa ending in ****1234).
+        *   Button: "Add New Payment Method".
+        *   Option to set a default payment method.
+    *   Billing History Section:
+        *   Table of past invoices: Date, Invoice ID, Amount, Status (Paid, Due), Download PDF link.
+    *   Usage Statistics (Optional, could be linked from here): Detailed breakdown of API calls, words translated, etc.
+
+*   **User Flow:**
+    *   User navigates to Billing via the sidebar.
+    *   User can view their current subscription details.
+    *   User can upgrade or change their plan, leading to a plan selection/checkout page.
+    *   User can add, view, or remove payment methods.
+    *   User can view and download past invoices.
+
+---
+
+### 7. API Documentation Page
+
+*   **Overall Layout:**
+    *   Header: Logo, Navigation (Back to Dashboard, other Docs sections if any). `flex justify-between items-center p-4 border-b`
+    *   Sidebar (Optional, for multi-page docs): Navigation for different API sections/endpoints. `w-1/4 p-4 border-r`
+    *   Main Content Area: Detailed API documentation. `flex-1 p-8`
+
+*   **Key Elements:**
+    *   Introduction: Overview of the API, authentication methods, base URL.
+    *   Authentication Section: How to get and use API keys.
+    *   Rate Limiting Information.
+    *   Endpoint Sections (one for each API endpoint):
+        *   HTTP Method and URL (e.g., `POST /api/v1/translations`).
+        *   Description of the endpoint's purpose.
+        *   Request Parameters: Table with Parameter Name, Type, Description, Required/Optional.
+        *   Request Body Example (e.g., JSON).
+        *   Response Format: Description and example (e.g., JSON).
+        *   Status Codes: List of possible HTTP status codes and their meanings.
+        *   Code Samples: Examples in various programming languages (e.g., cURL, Python, JavaScript). Tabs to switch languages.
+    *   Error Handling Guide.
+    *   Changelog/Versioning Information.
+    *   Search bar for documentation content (if extensive).
+
+*   **User Flow:**
+    *   User navigates to API Docs from Dashboard sidebar or other links.
+    *   User reads the introduction and authentication guide to understand how to start.
+    *   User browses through different endpoints using sidebar or scrolling.
+    *   For a specific endpoint, user reviews parameters, request/response examples, and code samples.
+    *   User copies code samples or uses information to integrate the API into their application.
+    *   User refers to error handling and status codes when debugging.
+---
