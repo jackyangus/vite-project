@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -28,19 +29,26 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
-        if (authentication.getPrincipal() instanceof User) {
-            User user = (User) authentication.getPrincipal();
+        if (authentication.getPrincipal() instanceof DefaultOAuth2User) {
+            DefaultOAuth2User oauth2User = (DefaultOAuth2User) authentication.getPrincipal();
+            String email = oauth2User.getAttribute("email");
+            String name = oauth2User.getAttribute("name");
+            String picture = oauth2User.getAttribute("picture");
+            
+            // Create a User object with the OAuth2 attributes
+            User user = new User();
+            user.setEmail(email);
+            user.setFullName(name);
+            user.setAvatarUrl(picture);
+            
             String token = jwtService.generateToken(user);
 
             String targetUrl = UriComponentsBuilder.fromUriString(frontendOAuthRedirectUrl)
                     .queryParam("token", token)
                     .build().toUriString();
             
-            // Store user details or token in session if preferred, or directly use in response
-            // For SPA, redirecting with token is common
             getRedirectStrategy().sendRedirect(request, response, targetUrl);
         } else {
-            // Handle cases where principal is not your User type, though it should be with CustomOAuth2UserService
             super.onAuthenticationSuccess(request, response, authentication);
         }
     }

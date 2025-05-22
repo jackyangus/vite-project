@@ -4,8 +4,12 @@ import com.example.userservice.model.User;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
@@ -28,9 +32,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         User user = userService.processOAuthPostLogin(providerUserId, providerName, email, name, avatarUrl);
         
-        // Spring Security expects an OAuth2User, so we return our User entity which implements UserDetails
-        // and can be adapted or wrapped if more OAuth2-specific attributes are needed by other parts of the framework.
-        // For now, returning our User directly works because it implements UserDetails.
-        return user;
+        // Create a map of attributes for the OAuth2User
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("sub", providerUserId);
+        attributes.put("email", email);
+        attributes.put("name", name);
+        attributes.put("picture", avatarUrl);
+        
+        // Return a DefaultOAuth2User with the user's authorities and attributes
+        return new DefaultOAuth2User(user.getAuthorities(), attributes, "sub");
     }
 }

@@ -1,5 +1,6 @@
 package com.example.userservice.config;
 
+import com.example.userservice.service.CustomOAuth2UserService;
 import com.example.userservice.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
