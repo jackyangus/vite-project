@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   app:
@@ -7,7 +7,7 @@ services:
       - "8080:8080"
     environment:
       # These will override values in application.properties
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql_db:3306/translation_app_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3307/Mercury?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - SPRING_DATASOURCE_USERNAME=app_user
       - SPRING_DATASOURCE_PASSWORD=app_pass
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
@@ -16,7 +16,7 @@ services:
       - GOOGLE_CLIENT_ID=your_google_client_id_from_google_cloud_console
       - GOOGLE_CLIENT_SECRET=your_google_client_secret_from_google_cloud_console
       - GOOGLE_TRANSLATE_API_KEY=your_google_translate_api_key_if_you_have_one # Can be dummy-key for mock
-      - FRONTEND_OAUTH_REDIRECT_URL=http://localhost:3000/oauth-callback
+      - FRONTEND_OAUTH_REDIRECT_URL=http://localhost:8080/oauth-callback
       - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG # Enable Spring Security DEBUG logging
     depends_on:
       - mysql_db

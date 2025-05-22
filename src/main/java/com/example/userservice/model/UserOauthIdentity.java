@@ -2,10 +2,20 @@ package com.example.userservice.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@Accessors(chain = true)
 @Entity
 @Table(name = "user_oauth_identities",
        uniqueConstraints = @UniqueConstraint(columnNames = {"provider_name", "provider_user_id"}))

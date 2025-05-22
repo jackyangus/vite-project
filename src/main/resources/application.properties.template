@@ -1,7 +1,7 @@
 # Database Configuration
-spring.datasource.url=${DB_URL:jdbc:mysql://localhost:3306/user_service_db}
-spring.datasource.username=${DB_USERNAME:root}
-spring.datasource.password=${DB_PASSWORD:password}
+spring.datasource.url=jdbc:mysql://localhost:3306/your_database_name
+spring.datasource.username=your_database_username
+spring.datasource.password=your_database_password
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
 # JPA Configuration
@@ -10,8 +10,9 @@ spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
 
 # JWT Configuration
-jwt.secret=${JWT_SECRET:your-super-secret-key-that-is-long-enough}
-jwt.expiration.ms=${JWT_EXPIRATION_MS:86400000} # 24 hours
+jwt.secret=your-super-secret-key-that-is-long-enough
+# 24 hours in milliseconds
+jwt.expiration.ms=86400000
 
 # Server Configuration
 server.port=8080
@@ -23,14 +24,17 @@ server.port=8080
 management.endpoints.web.exposure.include=health,info
 
 # Google OAuth2 Configuration
-spring.security.oauth2.client.registration.google.client-id=${GOOGLE_CLIENT_ID:your-google-client-id}
-spring.security.oauth2.client.registration.google.client-secret=${GOOGLE_CLIENT_SECRET:your-google-client-secret}
+spring.security.oauth2.client.registration.google.client-id=your-google-client-id
+spring.security.oauth2.client.registration.google.client-secret=your-google-client-secret
 spring.security.oauth2.client.registration.google.scope=openid,profile,email
 # The redirect-uri is typically handled by Spring Security, but you can override if needed.
 # spring.security.oauth2.client.registration.google.redirect-uri={baseUrl}/login/oauth2/code/{registrationId}
 
 # Frontend URL for OAuth2 redirect
-frontend.oauth.redirect.url=http://localhost:3000/oauth-callback
+frontend.oauth.redirect.url=http://localhost:8080/oauth-callback
 
 # Google Translate API Key
-google.translate.api.key=${GOOGLE_TRANSLATE_API_KEY:dummy-key}
+google.translate.api.key=your-google-translate-api-key
+
+# Add this to .gitignore to prevent committing actual application.properties
+# application.properties 

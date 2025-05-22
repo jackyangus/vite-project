@@ -21,7 +21,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     private final String frontendOAuthRedirectUrl;
 
     public OAuth2LoginSuccessHandler(JwtService jwtService,
-                                     @Value("${frontend.oauth.redirect.url:http://localhost:3000/oauth-callback}") String frontendOAuthRedirectUrl) {
+                                     @Value("${frontend.oauth.redirect.url:http://localhost:8080/oauth-callback}") String frontendOAuthRedirectUrl) {
         this.jwtService = jwtService;
         this.frontendOAuthRedirectUrl = frontendOAuthRedirectUrl;
     }

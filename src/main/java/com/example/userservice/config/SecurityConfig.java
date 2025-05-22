@@ -67,6 +67,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
             .csrf(AbstractHttpConfigurer::disable) // Disable CSRF
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/", "/index.html", "/health", "/error").permitAll() // Permit root path and health check
                 .requestMatchers("/api/auth/**", "/login/oauth2/code/**", "/oauth2/authorization/**").permitAll() // Permit all for /api/auth and OAuth2
                 .requestMatchers("/api/users/me").authenticated() // Secure /api/users/me
                 .requestMatchers("/api/translations/**").authenticated() // Secure /api/translations
@@ -90,7 +91,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // Frontend URL
+        configuration.setAllowedOrigins(List.of("http://localhost:8080")); // Frontend URL
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));
         configuration.setAllowCredentials(true); // Important for cookies, authorization headers with HTTPS
