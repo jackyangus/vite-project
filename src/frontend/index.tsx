@@ -6,6 +6,7 @@ import axios from "axios";
 import DebugSettingDraggable from "./debug/DebugSettingDraggable";
 import App from "./App";
 import "./index.css";
+import Dashboard from "./Dashboard";
 
 const urlArgs: any = Object.fromEntries(new URLSearchParams(location.search));
 
@@ -49,6 +50,17 @@ export default function HomeApp() {
     display: "block",
   });
 
+  useEffect(() => {
+    setShowJoinFlow(false);
+    setContainerStyle({
+      width: "100%",
+      height: "100%",
+      position: "absolute" as const,
+      top: 0,
+      left: 0,
+      display: "block",
+    });
+  }, []);
   // Add these state variables inside HomeApp component
   const [currentResolution, setCurrentResolution] = useState<string>("fullscreen");
   const [currentPosition, setCurrentPosition] = useState<string>("top-left");
@@ -198,13 +210,13 @@ export default function HomeApp() {
             handle="#debug-header"
           >
             <div id="sessionContainer" style={containerStyle} ref={nodeRef}>
-              <App />
+              <Dashboard />
             </div>
           </Draggable>
         )}
         {!isDraggable && (
           <div id="sessionContainer" style={containerStyle} ref={nodeRef}>
-            <App />
+            <Dashboard />
           </div>
         )}
 
