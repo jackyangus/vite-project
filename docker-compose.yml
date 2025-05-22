@@ -3,43 +3,29 @@ version: "3.8"
 services:
   app:
     build: .
+    restart: always
     ports:
-      - "8080:8080"
+      - "${PORT:-8080}:8080"
     environment:
-      # These will override values in application.properties
-      - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3307/Mercury?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - SPRING_DATASOURCE_USERNAME=app_user
-      - SPRING_DATASOURCE_PASSWORD=app_pass
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - JWT_SECRET=a_very_secure_jwt_secret_key_for_local_development_only_minimum_32_characters_long
-      - JWT_EXPIRATION_MS=3600000 # 1 hour
-      - GOOGLE_CLIENT_ID=your_google_client_id_from_google_cloud_console
-      - GOOGLE_CLIENT_SECRET=your_google_client_secret_from_google_cloud_console
-      - GOOGLE_TRANSLATE_API_KEY=your_google_translate_api_key_if_you_have_one # Can be dummy-key for mock
-      - FRONTEND_OAUTH_REDIRECT_URL=http://localhost:8080/oauth-callback
-      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG # Enable Spring Security DEBUG logging
-    depends_on:
-      - mysql_db
-    networks:
-      - app_network
-
-  mysql_db:
-    image: mysql:8.0
-    ports:
-      - "3307:3306" # Exposing on 3307 on host to avoid conflict if local MySQL runs on 3306
-    environment:
-      - MYSQL_ROOT_PASSWORD=very_strong_root_password_123!
-      - MYSQL_DATABASE=translation_app_db
-      - MYSQL_USER=app_user
-      - MYSQL_PASSWORD=app_pass
-    volumes:
-      - mysql-data:/var/lib/mysql # Persist database data
-    networks:
-      - app_network
-
-volumes:
-  mysql-data: # Define the named volume
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET:-mercury_super_secure_jwt_secret_key_2025}
+      - JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS:-86400000}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-your-google-client-id}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-your-google-client-secret}
+      - GOOGLE_TRANSLATE_API_KEY=${GOOGLE_TRANSLATE_API_KEY:-dummy-key}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:8080}
+      - MERCURY_WELCOME_MESSAGE=${MERCURY_WELCOME_MESSAGE:-Welcome to Mercury User Service}
+      - MERCURY_VERSION=${MERCURY_VERSION:-1.0.0}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 networks:
-  app_network:
+  default:
     driver: bridge
