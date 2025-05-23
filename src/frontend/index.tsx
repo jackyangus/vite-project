@@ -2,9 +2,7 @@ import VConsole from "vconsole";
 import { v7 as uuidv7 } from "uuid";
 import { useState, useCallback, useRef, useEffect } from "react";
 import Draggable from "react-draggable";
-import axios from "axios";
 import DebugSettingDraggable from "./debug/DebugSettingDraggable";
-import App from "./App";
 import "./index.css";
 import Dashboard from "./Dashboard";
 

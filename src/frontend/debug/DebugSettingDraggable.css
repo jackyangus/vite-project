@@ -1,9 +1,10 @@
-body,
+/* Remove the problematic global styles that prevent scrolling */
+/* body,
 html {
   margin: 0;
   padding: 0;
   overflow: hidden;
-}
+} */
 
 /* Add these styles after your existing styles */
 
@@ -308,8 +309,6 @@ html {
   background-color: #0070e0;
   border-color: #0070e0;
 }
-
-
 
 /* Modal close button style */
 .performance-modal-close {
