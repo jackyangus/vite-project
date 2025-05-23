@@ -46,6 +46,7 @@ interface PerformanceResourceTiming extends PerformanceEntry {
 
 interface LayoutShiftEntry extends PerformanceEntry {
   value: number;
+  hadRecentInput: boolean;
 }
 
 class BrowserPerformanceTest {
@@ -103,13 +104,13 @@ class BrowserPerformanceTest {
     }
 
     let clsValue = 0;
-    const clsEntries: PerformanceEntry[] = [];
+    const clsEntries: LayoutShiftEntry[] = [];
 
     // Create new PerformanceObserver instance
     const observer = new PerformanceObserver((entryList) => {
       for (const entry of entryList.getEntries()) {
-        if (!entry.hadRecentInput) {
-          const layoutShiftEntry = entry as LayoutShiftEntry;
+        const layoutShiftEntry = entry as LayoutShiftEntry;
+        if (!layoutShiftEntry.hadRecentInput) {
           clsValue += layoutShiftEntry.value;
           clsEntries.push(layoutShiftEntry);
         }

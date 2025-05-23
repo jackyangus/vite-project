@@ -71,7 +71,7 @@ export default function DebugSettingDraggable({
   currentPosition,
 }: DebugSettingDraggableProps) {
   const [isControlsVisible, setIsControlsVisible] = useState(false);
-  const hideTimeoutRef = useRef<number>();
+  const hideTimeoutRef = useRef<number | null>(null);
   const controlPanelRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
   const settingNodeRef = useRef(null);

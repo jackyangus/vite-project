@@ -36,7 +36,7 @@ export default function HomeApp() {
   const [showControls, setShowControls] = useState(false);
   const isDraggable = urlArgs.drag === "1";
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const hideTimeoutRef = useRef<number>();
+  const hideTimeoutRef = useRef<number | null>(null);
   const controlPanelRef = useRef<HTMLDivElement>(null);
 
   const defaultStyle = useRef({

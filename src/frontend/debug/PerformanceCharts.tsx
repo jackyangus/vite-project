@@ -114,6 +114,7 @@ const formatTooltipValue = (value: number, unit: string) => {
 // Add this new helper function near the top with other utility functions
 const createECGLine = (dataKey: string, color: string, name: string) => (
   <Line
+    key={dataKey}
     type="basis"
     dataKey={dataKey}
     stroke={color}
@@ -122,8 +123,6 @@ const createECGLine = (dataKey: string, color: string, name: string) => (
     dot={false}
     connectNulls
     animationDuration={300}
-    // Increase tension to make the line more "sharp"
-    tension={0.8}
   />
 );
 

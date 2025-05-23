@@ -96,7 +96,8 @@
   "name": "transhub",
   "private": true,
   "scripts": {
-    "build": "tsc && cross-env NODE_ENV=production vite build && npm run umd",
+    "build": "tsc && cross-env NODE_ENV=production vite build",
+    "umd": "cross-env NODE_ENV=production vite build --mode umd",
     "commit": "cz",
     "test": "echo 'test'",
     "dev": "cross-env vite",
