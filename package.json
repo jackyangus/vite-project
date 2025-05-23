@@ -95,6 +95,11 @@
   },
   "name": "transhub",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jackyangus/vite-project.git"
+  },
+  "homepage": "https://jackyangus.github.io/vite-project",
   "scripts": {
     "build": "tsc && cross-env NODE_ENV=production vite build",
     "umd": "cross-env NODE_ENV=production vite build --mode umd",

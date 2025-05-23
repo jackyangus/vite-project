@@ -89,6 +89,38 @@ npm run build
 npm run preview
 ```
 
+## 🚀 部署
+
+### GitHub Pages 自动部署
+
+项目配置了 GitHub Actions 自动部署到 GitHub Pages：
+
+1. **推送代码到 main 分支**：
+
+   ```bash
+   git add .
+   git commit -m "Your commit message"
+   git push origin main
+   ```
+
+2. **GitHub Actions 自动执行**：
+
+   - 安装依赖
+   - 运行 `npm run build`
+   - 部署到 GitHub Pages
+
+3. **访问部署的应用**：
+   https://jackyangus.github.io/vite-project
+
+### 手动部署
+
+如需手动部署到其他平台：
+
+```bash
+npm run build
+# 将 dist/ 目录上传到你的服务器
+```
+
 ## 📱 功能模块
 
 ### 1. 仪表板概览

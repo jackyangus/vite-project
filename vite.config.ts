@@ -78,6 +78,7 @@ console.log("outputConfig", outputConfig);
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: process.env.NODE_ENV === "production" ? "/vite-project/" : "/",
   publicDir: "public",
   plugins: [
     tailwindcss(),
