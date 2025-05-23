@@ -14,7 +14,7 @@ const Button = ({
   variant?: "primary" | "secondary" | "outline" | "danger";
   size?: "sm" | "md" | "lg";
   icon?: React.ElementType<LucideProps>;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   disabled?: boolean;
   [x: string]: any; // For other props
 }) => {
