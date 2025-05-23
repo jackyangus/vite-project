@@ -126,7 +126,7 @@ export const lightTheme: Theme = {
         outline: "bg-transparent text-blue-600 border border-gray-300 hover:bg-gray-50 focus:ring-blue-500",
         danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
       },
-      disabled: "opacity-40 cursor-not-allowed pointer-events-none",
+      disabled: "opacity-60 cursor-not-allowed pointer-events-none",
     },
     card: {
       wrapper: "bg-white shadow-sm border border-gray-100",
@@ -259,16 +259,16 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode; initialTheme?:
   const setTheme = (themeName: "light" | "dark") => {
     setCurrentThemeName(themeName);
     // Persist theme preference if desired (e.g., localStorage)
-    // localStorage.setItem('theme', themeName);
+    localStorage.setItem("theme", themeName);
   };
 
-  // useEffect(() => {
-  // Optional: Load theme from localStorage on initial mount
-  // const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
-  // if (savedTheme) {
-  //   setCurrentThemeName(savedTheme);
-  // }
-  // }, []);
+  useEffect(() => {
+    // Optional: Load theme from localStorage on initial mount
+    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
+    if (savedTheme) {
+      setCurrentThemeName(savedTheme);
+    }
+  }, []);
 
   const theme = useMemo(() => (currentThemeName === "light" ? lightTheme : darkTheme), [currentThemeName]);
 

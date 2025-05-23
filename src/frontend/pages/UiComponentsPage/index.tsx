@@ -52,6 +52,31 @@ import {
   Sparkles,
   Moon,
   Sun,
+  MessageCircle,
+  UserPlus,
+  Bookmark,
+  Globe,
+  Building2,
+  Code,
+  Database,
+  Shield,
+  Camera,
+  Video,
+  Image,
+  Headphones,
+  ChevronLeft,
+  ChevronRight,
+  Home,
+  Folder,
+  FolderOpen,
+  Menu,
+  MoreHorizontal,
+  Check,
+  ArrowUpRight,
+  ExternalLink,
+  ChevronsLeft,
+  ChevronsRight,
+  ShoppingCart,
 } from "lucide-react";
 import Alert from "@/frontend/components/ui/Alert";
 import Card from "@/frontend/components/ui/Card";
@@ -72,6 +97,21 @@ const BeautifulUIComponents = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(75);
   const [progress, setProgress] = useState(65);
+  const [searchValue, setSearchValue] = useState("");
+  const [textareaValue, setTextareaValue] = useState(
+    "This is a beautiful textarea component with character counting and smooth animations...",
+  );
+  const [selectValue, setSelectValue] = useState("");
+  const [progressValues, setProgressValues] = useState({
+    default: 75,
+    success: 90,
+    warning: 45,
+    danger: 25,
+  });
+  const [activeNavTab, setActiveNavTab] = useState("home");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentStep, setCurrentStep] = useState(2);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const fileUploadData = [
     { name: "design-system.sketch", size: "2.4 MB", type: "Sketch", progress: 100 },
@@ -139,6 +179,89 @@ const BeautifulUIComponents = () => {
     },
   ];
 
+  const statCardData = [
+    { title: "Total Revenue", value: "$12,426", change: "+12.5%", icon: TrendingUp, color: "green" as const },
+    { title: "Active Users", value: "2,543", change: "+8.2%", icon: Users, color: "blue" as const },
+    { title: "Projects", value: "127", change: "+23.1%", icon: Building2, color: "purple" as const },
+    { title: "Success Rate", value: "98.5%", change: "+2.1%", icon: Target, color: "orange" as const },
+  ];
+
+  const teamMembers = [
+    {
+      name: "Sarah Chen",
+      role: "Lead Designer",
+      status: "online" as const,
+      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612c2eb?w=64&h=64&fit=crop&crop=face",
+    },
+    {
+      name: "Alex Rivera",
+      role: "Frontend Dev",
+      status: "busy" as const,
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64&h=64&fit=crop&crop=face",
+    },
+    {
+      name: "Emma Johnson",
+      role: "UX Designer",
+      status: "away" as const,
+      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop&crop=face",
+    },
+    {
+      name: "David Kim",
+      role: "Product Manager",
+      status: "online" as const,
+      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=64&h=64&fit=crop&crop=face",
+    },
+  ];
+
+  const badgeExamples = [
+    { text: "New Feature", variant: "primary" as const, icon: Sparkles },
+    { text: "Beta", variant: "warning" as const, icon: Clock },
+    { text: "Popular", variant: "success" as const, icon: TrendingUp },
+    { text: "Limited", variant: "danger" as const, icon: AlertTriangle },
+    { text: "Premium", variant: "info" as const, icon: Star },
+  ];
+
+  const selectOptions = [
+    { value: "frontend", label: "Frontend Development" },
+    { value: "backend", label: "Backend Development" },
+    { value: "fullstack", label: "Full Stack Development" },
+    { value: "mobile", label: "Mobile Development" },
+    { value: "devops", label: "DevOps Engineering" },
+    { value: "design", label: "UI/UX Design" },
+  ];
+
+  const breadcrumbItems = [
+    { label: "Home", href: "#", icon: Home },
+    { label: "Projects", href: "#", icon: Folder },
+    { label: "UI Components", href: "#", icon: FolderOpen },
+    { label: "Navigation Demo", href: "#", current: true, icon: Globe },
+  ];
+
+  const navigationTabs = [
+    { id: "home", label: "Home", icon: Home },
+    { id: "projects", label: "Projects", icon: Folder },
+    { id: "team", label: "Team", icon: Users },
+    { id: "settings", label: "Settings", icon: Settings },
+  ];
+
+  const sidebarMenuItems = [
+    { label: "Dashboard", icon: Home, active: true, notifications: 0 },
+    { label: "Projects", icon: Folder, active: false, notifications: 3 },
+    { label: "Team", icon: Users, active: false, notifications: 0 },
+    { label: "Analytics", icon: TrendingUp, active: false, notifications: 0 },
+    { label: "Settings", icon: Settings, active: false, notifications: 1 },
+  ];
+
+  const steps = [
+    { id: 1, title: "Project Setup", description: "Configure your project settings", completed: true },
+    { id: 2, title: "Design System", description: "Choose colors and typography", completed: true },
+    { id: 3, title: "Components", description: "Build your component library", active: true },
+    { id: 4, title: "Testing", description: "Test your components", completed: false },
+    { id: 5, title: "Deploy", description: "Launch your beautiful UI", completed: false },
+  ];
+
+  const totalPages = 12;
+
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
     document.documentElement.classList.toggle("dark");
@@ -155,7 +278,7 @@ const BeautifulUIComponents = () => {
           className="fixed top-6 right-6 z-50 p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700"
           aria-label="Toggle theme"
         >
-          {isDarkMode ? <Sun className="h-5 w-5 text-yellow-500" /> : <Moon className="h-5 w-5 text-gray-600" />}
+          {isDarkMode ? <Sun className="h-5 w-5 text-yellow-500" /> : <Moon className="h-5 w-5 text-gray-700" />}
         </button>
 
         {/* Enhanced Header */}
@@ -171,7 +294,7 @@ const BeautifulUIComponents = () => {
               UI Components
             </h1>
             <p
-              className={`text-xl max-w-3xl mx-auto leading-relaxed ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}
+              className={`text-xl max-w-3xl mx-auto leading-relaxed ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}
             >
               Discover our comprehensive collection of modern, accessible, and beautifully crafted components designed
               for the next generation of web applications.
@@ -224,6 +347,8 @@ const BeautifulUIComponents = () => {
               { id: "feedback", label: "Feedback", icon: Bell },
               { id: "data", label: "Data", icon: FileText },
               { id: "media", label: "Media", icon: Volume2 },
+              { id: "content", label: "Content", icon: MessageCircle },
+              { id: "navigation", label: "Navigation", icon: Globe },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -231,7 +356,7 @@ const BeautifulUIComponents = () => {
                 className={`flex items-center space-x-2 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
                   activeTab === tab.id
                     ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
-                    : `${isDarkMode ? "text-gray-300 hover:text-white hover:bg-gray-700" : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"}`
+                    : `${isDarkMode ? "text-gray-300 hover:text-white hover:bg-gray-700" : "text-gray-700 hover:text-gray-900 hover:bg-gray-50"}`
                 }`}
               >
                 <tab.icon className="h-4 w-4" />
@@ -271,57 +396,11 @@ const BeautifulUIComponents = () => {
                     <h3 className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
                       {feature.title}
                     </h3>
-                    <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>{feature.description}</p>
+                    <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-700"}`}>{feature.description}</p>
                   </div>
                 </Card>
               ))}
             </div>
-
-            {/* Enhanced Button Showcase */}
-            <Card title="Button Variations" className="group">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="space-y-3">
-                  <h4 className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Primary Actions</h4>
-                  <Button variant="primary" icon={Save} className="w-full">
-                    Save Changes
-                  </Button>
-                  <Button variant="primary" icon={Send} className="w-full">
-                    Send Message
-                  </Button>
-                  <Button variant="primary" icon={Download} className="w-full">
-                    Download File
-                  </Button>
-                </div>
-
-                <div className="space-y-3">
-                  <h4 className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Secondary Actions</h4>
-                  <Button variant="secondary" icon={Edit3} className="w-full">
-                    Edit Content
-                  </Button>
-                  <Button variant="outline" icon={Share2} className="w-full">
-                    Share Link
-                  </Button>
-                  <Button variant="outline" icon={Archive} className="w-full">
-                    Archive Item
-                  </Button>
-                </div>
-
-                <div className="space-y-3">
-                  <h4 className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
-                    Destructive Actions
-                  </h4>
-                  <Button variant="danger" icon={Trash2} className="w-full">
-                    Delete Forever
-                  </Button>
-                  <Button variant="danger" icon={LogOut} className="w-full">
-                    Sign Out
-                  </Button>
-                  <Button disabled icon={X} className="w-full">
-                    Disabled State
-                  </Button>
-                </div>
-              </div>
-            </Card>
 
             {/* Interactive Rating Component */}
             <Card title="Interactive Rating" className="max-w-md">
@@ -341,9 +420,276 @@ const BeautifulUIComponents = () => {
                     </button>
                   ))}
                 </div>
-                <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+                <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-700"}`}>
                   {rating > 0 ? `You rated ${rating} out of 5 stars` : "Click to rate"}
                 </p>
+              </div>
+            </Card>
+
+            {/* Enhanced Button Showcase */}
+            <Card title="Button Component Showcase" className="group">
+              <div className="space-y-8">
+                {/* Button Sizes */}
+                <div>
+                  <h4 className={`text-lg font-semibold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                    Button Sizes
+                  </h4>
+                  <div className="flex flex-wrap items-end gap-4">
+                    <Button size="xs" icon={Play}>
+                      Extra Small
+                    </Button>
+                    <Button size="sm" icon={Download}>
+                      Small
+                    </Button>
+                    <Button size="md" icon={Settings}>
+                      Medium
+                    </Button>
+                    <Button size="lg" icon={Heart}>
+                      Large
+                    </Button>
+                    <Button size="xl" icon={ShoppingCart}>
+                      Extra Large
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Button Variants */}
+                <div>
+                  <h4 className={`text-lg font-semibold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                    Button Variants
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="space-y-3">
+                      <h5 className={`font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Primary</h5>
+                      <Button variant="primary" icon={Play} className="w-full">
+                        Primary Action
+                      </Button>
+                      <Button variant="primary" className="w-full">
+                        Primary Text Only
+                      </Button>
+                      <Button variant="primary" icon={Save} />
+                    </div>
+
+                    <div className="space-y-3">
+                      <h5 className={`font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Secondary</h5>
+                      <Button variant="secondary" icon={Edit3} className="w-full">
+                        Secondary Action
+                      </Button>
+                      <Button variant="secondary" className="w-full">
+                        Secondary Text Only
+                      </Button>
+                      <Button variant="secondary" icon={Download} />
+                    </div>
+
+                    <div className="space-y-3">
+                      <h5 className={`font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Outline</h5>
+                      <Button variant="outline" icon={Share2} className="w-full">
+                        Outline Action
+                      </Button>
+                      <Button variant="outline" className="w-full">
+                        Outline Text Only
+                      </Button>
+                      <Button variant="outline" icon={Settings} />
+                    </div>
+
+                    <div className="space-y-3">
+                      <h5 className={`font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Danger</h5>
+                      <Button variant="danger" icon={Trash2} className="w-full">
+                        Danger Action
+                      </Button>
+                      <Button variant="danger" className="w-full">
+                        Delete Item
+                      </Button>
+                      <Button variant="danger" icon={X} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Button States */}
+                <div>
+                  <h4 className={`text-lg font-semibold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                    Button States
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="space-y-3">
+                      <h5 className={`font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Normal State</h5>
+                      <Button variant="primary" icon={Play}>
+                        Normal
+                      </Button>
+                      <Button variant="outline" icon={Download}>
+                        Outline Normal
+                      </Button>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h5 className={`font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+                        Disabled State
+                      </h5>
+                      <Button disabled variant="primary" icon={Play}>
+                        Disabled
+                      </Button>
+                      <Button disabled variant="outline" icon={Download}>
+                        Disabled Outline
+                      </Button>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h5 className={`font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Loading State</h5>
+                      <Button variant="primary" className="relative">
+                        <div className="absolute left-3">
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                        </div>
+                        <span className="ml-6">Loading...</span>
+                      </Button>
+                      <Button variant="secondary" className="relative">
+                        <div className="absolute left-3">
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-600 border-t-transparent"></div>
+                        </div>
+                        <span className="ml-6">Processing</span>
+                      </Button>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h5 className={`font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Icon Only</h5>
+                      <div className="flex gap-2">
+                        <Button size="sm" icon={Play} />
+                        <Button size="md" icon={Heart} />
+                        <Button size="lg" icon={Settings} />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" icon={Download} />
+                        <Button variant="danger" size="sm" icon={Trash2} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Interactive Examples */}
+                <div>
+                  <h4 className={`text-lg font-semibold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                    Interactive Examples
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="space-y-3">
+                      <h5 className={`font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+                        Media Controls
+                      </h5>
+                      <div className="flex gap-2">
+                        <Button variant="primary" icon={Play} onClick={() => alert("Playing...")} />
+                        <Button variant="secondary" icon={Pause} onClick={() => alert("Paused")} />
+                        <Button variant="outline" icon={Download} onClick={() => alert("Downloading...")} />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h5 className={`font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Actions</h5>
+                      <div className="space-y-2">
+                        <Button
+                          variant="primary"
+                          icon={Save}
+                          className="w-full"
+                          onClick={() => alert("Saved successfully!")}
+                        >
+                          Save Changes
+                        </Button>
+                        <Button
+                          variant="danger"
+                          icon={Trash2}
+                          className="w-full"
+                          onClick={() => alert("Are you sure you want to delete?")}
+                        >
+                          Delete Item
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h5 className={`font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Navigation</h5>
+                      <div className="space-y-2">
+                        <Button
+                          variant="outline"
+                          icon={ArrowLeft}
+                          className="w-full"
+                          onClick={() => alert("Going back...")}
+                        >
+                          Go Back
+                        </Button>
+                        <Button variant="primary" className="w-full" onClick={() => alert("Moving forward...")}>
+                          Continue
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Button Groups */}
+                <div>
+                  <h4 className={`text-lg font-semibold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                    Button Groups
+                  </h4>
+                  <div className="space-y-4">
+                    <div>
+                      <h5 className={`font-medium mb-2 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+                        Action Groups
+                      </h5>
+                      <div className="flex flex-wrap gap-2">
+                        <Button variant="primary" icon={Save}>
+                          Save
+                        </Button>
+                        <Button variant="secondary" icon={Edit3}>
+                          Edit
+                        </Button>
+                        <Button variant="outline" icon={Share2}>
+                          Share
+                        </Button>
+                        <Button variant="danger" icon={Trash2}>
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h5 className={`font-medium mb-2 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+                        Size Variations
+                      </h5>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button size="xs" variant="outline">
+                          Extra Small
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          Small
+                        </Button>
+                        <Button size="md" variant="primary">
+                          Medium (Default)
+                        </Button>
+                        <Button size="lg" variant="outline">
+                          Large
+                        </Button>
+                        <Button size="xl" variant="outline">
+                          Extra Large
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h5 className={`font-medium mb-2 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+                        Responsive Actions
+                      </h5>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Button variant="primary" icon={PlusCircle} className="flex-1">
+                          Create New
+                        </Button>
+                        <Button variant="secondary" icon={Filter} className="flex-1">
+                          Filter Results
+                        </Button>
+                        <Button variant="outline" icon={Search} className="flex-1">
+                          Search Items
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </Card>
           </div>
@@ -357,8 +703,8 @@ const BeautifulUIComponents = () => {
               <div className="space-y-6">
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className={isDarkMode ? "text-gray-300" : "text-gray-600"}>Upload Progress</span>
-                    <span className={isDarkMode ? "text-gray-300" : "text-gray-600"}>{progress}%</span>
+                    <span className={isDarkMode ? "text-gray-300" : "text-gray-700"}>Upload Progress</span>
+                    <span className={isDarkMode ? "text-gray-300" : "text-gray-700"}>{progress}%</span>
                   </div>
                   <div className={`w-full h-3 rounded-full ${isDarkMode ? "bg-gray-700" : "bg-gray-200"}`}>
                     <div
@@ -391,7 +737,7 @@ const BeautifulUIComponents = () => {
                 {/* Loading Spinner */}
                 <div className="flex items-center space-x-3 p-4 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700">
                   <div className="animate-spin rounded-full h-6 w-6 border-2 border-purple-500 border-t-transparent"></div>
-                  <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
+                  <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
                     Loading amazing content...
                   </span>
                 </div>
@@ -622,15 +968,15 @@ const BeautifulUIComponents = () => {
               <Card title="Quick Stats" className="lg:col-span-1">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Active Users</span>
+                    <span className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-700"}`}>Active Users</span>
                     <span className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>127</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Conversion Rate</span>
+                    <span className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-700"}`}>Conversion Rate</span>
                     <span className={`font-semibold text-green-600`}>12.5%</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Avg. Session</span>
+                    <span className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-700"}`}>Avg. Session</span>
                     <span className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>4m 32s</span>
                   </div>
                 </div>
@@ -714,7 +1060,7 @@ const BeautifulUIComponents = () => {
                 </div>
 
                 <div className="flex items-center space-x-4">
-                  <Volume2 className={`h-5 w-5 ${isDarkMode ? "text-gray-400" : "text-gray-600"}`} />
+                  <Volume2 className={`h-5 w-5 ${isDarkMode ? "text-gray-400" : "text-gray-700"}`} />
                   <div className="flex-1">
                     <input
                       type="range"
@@ -725,7 +1071,7 @@ const BeautifulUIComponents = () => {
                       className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
                     />
                   </div>
-                  <span className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>{volume}%</span>
+                  <span className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-700"}`}>{volume}%</span>
                 </div>
               </div>
             </Card>
@@ -737,7 +1083,7 @@ const BeautifulUIComponents = () => {
                     <Wifi className="h-6 w-6 text-blue-500" />
                     <div>
                       <p className={`font-medium ${isDarkMode ? "text-white" : "text-gray-900"}`}>WiFi Connection</p>
-                      <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>Beautiful-UI-5G</p>
+                      <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-700"}`}>Beautiful-UI-5G</p>
                     </div>
                   </div>
                   <Tag variant="success">Connected</Tag>
@@ -748,7 +1094,7 @@ const BeautifulUIComponents = () => {
                     <Battery className="h-6 w-6 text-green-500" />
                     <div>
                       <p className={`font-medium ${isDarkMode ? "text-white" : "text-gray-900"}`}>Battery Level</p>
-                      <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+                      <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-700"}`}>
                         Charging - 2h remaining
                       </p>
                     </div>
@@ -761,7 +1107,7 @@ const BeautifulUIComponents = () => {
                     <Zap className="h-6 w-6 text-purple-500" />
                     <div>
                       <p className={`font-medium ${isDarkMode ? "text-white" : "text-gray-900"}`}>Performance</p>
-                      <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+                      <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-700"}`}>
                         Optimized for beauty
                       </p>
                     </div>
@@ -770,6 +1116,234 @@ const BeautifulUIComponents = () => {
                 </div>
               </div>
             </Card>
+          </div>
+        )}
+
+        {/* Content Tab - New */}
+        {/* Temporarily commenting out to debug the error */}
+        {/*
+        {activeTab === "content" && (
+          <div className="space-y-8">
+            <Card title="Content Components - Debugging">
+              <div className="text-center py-12">
+                <div className="flex justify-center mb-4">
+                  <div className="p-4 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl">
+                    <MessageCircle className="h-12 w-12 text-blue-600" />
+                  </div>
+                </div>
+                <h3 className={`text-xl font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  Content Components
+                </h3>
+                <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-700'} max-w-md mx-auto`}>
+                  Content components are temporarily disabled for debugging. Please check console for errors.
+                </p>
+              </div>
+            </Card>
+          </div>
+        )}
+        */}
+
+        {/* Navigation Tab - New */}
+        {activeTab === "navigation" && (
+          <div className="space-y-6">
+            {/* Test: Adding back breadcrumbs first */}
+            <Card title="Breadcrumb Navigation">
+              <div className="space-y-6">
+                <div>
+                  <h4 className={`font-semibold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                    Classic Breadcrumbs
+                  </h4>
+                  <nav className="flex" aria-label="Breadcrumb">
+                    <ol className="flex items-center space-x-2">
+                      {breadcrumbItems.map((item, index) => {
+                        const IconComponent = item.icon;
+                        return (
+                          <li key={index} className="flex items-center">
+                            {index > 0 && (
+                              <ChevronRight
+                                className={`w-4 h-4 mx-2 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}
+                              />
+                            )}
+                            <div className="flex items-center space-x-2">
+                              {IconComponent && <IconComponent className="w-4 h-4" />}
+                              <a
+                                href={item.href}
+                                className={`text-sm font-medium transition-colors ${
+                                  item.current
+                                    ? `${isDarkMode ? "text-purple-400" : "text-purple-600"} cursor-default`
+                                    : `${isDarkMode ? "text-gray-300 hover:text-white" : "text-gray-700 hover:text-gray-900"}`
+                                }`}
+                                aria-current={item.current ? "page" : undefined}
+                              >
+                                {item.label}
+                              </a>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  </nav>
+                </div>
+
+                <div>
+                  <h4 className={`font-semibold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                    Styled Breadcrumbs
+                  </h4>
+                  <nav className="flex" aria-label="Breadcrumb">
+                    <ol className="flex items-center space-x-1">
+                      {breadcrumbItems.map((item, index) => {
+                        const IconComponent = item.icon;
+                        return (
+                          <li key={index} className="flex items-center">
+                            {index > 0 && (
+                              <div
+                                className={`w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] mx-1 ${isDarkMode ? "border-l-transparent border-r-transparent border-t-gray-600" : "border-l-transparent border-r-transparent border-t-gray-400"}`}
+                              ></div>
+                            )}
+                            <div
+                              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                                item.current
+                                  ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                                  : `${isDarkMode ? "bg-gray-700 text-gray-300 hover:bg-gray-600" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`
+                              }`}
+                            >
+                              <IconComponent className="w-4 h-4" />
+                              <span className="text-sm font-medium">{item.label}</span>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  </nav>
+                </div>
+              </div>
+            </Card>
+
+            {/* Tabs & Stepper */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card title="Tab Navigation">
+                <div className="space-y-6">
+                  <div>
+                    <h4 className={`font-semibold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                      Horizontal Tabs
+                    </h4>
+                    <div className={`border-b ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}>
+                      <nav className="-mb-px flex space-x-8">
+                        {navigationTabs.map((tab) => {
+                          const IconComponent = tab.icon;
+                          return (
+                            <button
+                              key={tab.id}
+                              onClick={() => setActiveNavTab(tab.id)}
+                              className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                                activeNavTab === tab.id
+                                  ? "border-purple-500 text-purple-600 dark:text-purple-400"
+                                  : `border-transparent ${isDarkMode ? "text-gray-400 hover:text-gray-200 hover:border-gray-600" : "text-gray-500 hover:text-gray-700 hover:border-gray-300"}`
+                              }`}
+                            >
+                              <IconComponent className="w-4 h-4" />
+                              <span>{tab.label}</span>
+                            </button>
+                          );
+                        })}
+                      </nav>
+                    </div>
+                    <div className="mt-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
+                      <p className={`${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+                        Content for{" "}
+                        <span className="font-semibold">
+                          {navigationTabs.find((tab) => tab.id === activeNavTab)?.label}
+                        </span>{" "}
+                        tab
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className={`font-semibold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>Pill Tabs</h4>
+                    <div className="flex space-x-2">
+                      {navigationTabs.map((tab) => {
+                        const IconComponent = tab.icon;
+                        return (
+                          <button
+                            key={tab.id}
+                            onClick={() => setActiveNavTab(tab.id)}
+                            className={`flex items-center space-x-2 px-4 py-2 rounded-full font-medium text-sm transition-colors ${
+                              activeNavTab === tab.id
+                                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
+                                : `${isDarkMode ? "bg-gray-700 text-gray-300 hover:bg-gray-600" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`
+                            }`}
+                          >
+                            <IconComponent className="w-4 h-4" />
+                            <span>{tab.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card title="Step Progress">
+                <div className="space-y-6">
+                  <div>
+                    <h4 className={`font-semibold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                      Process Stepper
+                    </h4>
+                    <div className="space-y-4">
+                      {steps.map((step, index) => (
+                        <div key={step.id} className="flex items-start">
+                          <div className="flex items-center">
+                            <div
+                              className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors ${
+                                step.completed
+                                  ? "bg-green-500 border-green-500 text-white"
+                                  : step.active
+                                    ? "bg-purple-500 border-purple-500 text-white"
+                                    : `${isDarkMode ? "border-gray-600 text-gray-400" : "border-gray-300 text-gray-500"}`
+                              }`}
+                            >
+                              {step.completed ? (
+                                <Check className="w-5 h-5" />
+                              ) : (
+                                <span className="text-sm font-semibold">{step.id}</span>
+                              )}
+                            </div>
+                            {index < steps.length - 1 && (
+                              <div className={`w-px h-16 ml-5 ${isDarkMode ? "bg-gray-600" : "bg-gray-300"}`}></div>
+                            )}
+                          </div>
+                          <div className="ml-4">
+                            <h5 className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                              {step.title}
+                            </h5>
+                            <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-700"}`}>
+                              {step.description}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex space-x-2 mt-6">
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
+                        disabled={currentStep === 1}
+                      >
+                        Previous
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onClick={() => setCurrentStep(Math.min(5, currentStep + 1))}
+                        disabled={currentStep === 5}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
           </div>
         )}
 
