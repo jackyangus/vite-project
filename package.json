@@ -93,7 +93,7 @@
       "prettier --write"
     ]
   },
-  "name": "react-vite-template",
+  "name": "transhub",
   "private": true,
   "scripts": {
     "build": "tsc && cross-env NODE_ENV=production vite build && npm run umd",
