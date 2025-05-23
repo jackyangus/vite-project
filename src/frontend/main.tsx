@@ -18,6 +18,7 @@ if (rootEle) {
             <Routes>
               <Route path="/dashboard" element={<HomeApp />} />
               <Route path="/" element={<UiComponentsPage />} />
+              <Route path="/vite-project" element={<UiComponentsPage />} />
             </Routes>
           </BrowserRouter>
         </Provider>
