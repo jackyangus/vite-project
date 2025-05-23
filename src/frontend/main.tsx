@@ -16,8 +16,8 @@ if (rootEle) {
         <Provider store={store}>
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<HomeApp />} />
-              <Route path="/ui" element={<UiComponentsPage />} />
+              <Route path="/dashboard" element={<HomeApp />} />
+              <Route path="/" element={<UiComponentsPage />} />
             </Routes>
           </BrowserRouter>
         </Provider>
